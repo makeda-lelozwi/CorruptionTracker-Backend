@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import httpx
-from selectolax.parser import HTMLParser
+from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import time
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,7 +29,7 @@ FILTER_KEYWORDS = [
     "Commissioner", "Allegations", "Ad Hoc Committee"
 ]
 
-def get_month_html(month:int, year:int=2025) -> HTMLParser:
+def get_month_html(month:int, year:int=2025) -> BeautifulSoup | None:
     # Fetch HTML for a specific month/year (POST req)
     print(f"Getting news for {month}")
     payload = {"newDate": f"{month} {year}"}
@@ -44,41 +44,42 @@ def get_month_html(month:int, year:int=2025) -> HTMLParser:
      # Extract HTML from the 'news-archive' key
     if 'news-archive' in json_resp:
         html_content = json_resp['news-archive']
-        html = HTMLParser(html_content)
-        
+        soup = BeautifulSoup(html_content, 'html.parser')
+      
         # Check if we got any articles
-        rows = html.css("table#newsArchive tbody tr")
+        rows = soup.select("table#newsArchive tbody tr")
         print(f"  Found {len(rows)} articles")
         
-        return html
+        return soup
     else:
         print(f"  No 'news-archive' key in response")
         return None
 
-def parse_news_page(html):
+def parse_news_page(soup: BeautifulSoup):
     # Extract article links from the news archive table
-    rows = html.css("table#newsArchive tbody tr")
+    rows = soup.select("table#newsArchive tbody tr")
     
     for row in rows:
-        a_tag = row.css_first("a")
-        text_cells = row.css("td")
+        a_tag = row.select_one("a")
+        text_cells = row.find_all("td")
         
         if a_tag and len(text_cells)>1:
-            link = urljoin("https://www.parliament.gov.za/news", a_tag.attributes["href"])
-            title = a_tag.text(strip=True)
-            date = text_cells[1].text(strip=True)
-            yield title, link,date
+            href = a_tag.get("href", "")
+            link = urljoin(BASE_URL, href)
+            title = a_tag.get_text(strip=True)
+            date = text_cells[1].get_text(strip=True)
+            yield title, link, date
 
 
-def get_page_html(baseUrl): 
+def get_page_html(baseUrl: str) -> BeautifulSoup:
     headers = { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" } 
     resp = httpx.get(baseUrl, headers=headers) 
-    html = HTMLParser(resp.text) 
-    return html
+    soup = BeautifulSoup(resp.text, "html.parser")
+    return soup
 
-def parse_article(html):
+def parse_article(soup: BeautifulSoup):
     # Extract paragraphs from an article page
-    paragraphs = html.css("div.small-12 p")
+    paragraphs = soup.select("div.small-12 p")
 
     parsed_paragraphs = {}
 
