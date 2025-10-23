@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import time
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 app = FastAPI()
 
 app.add_middleware(
@@ -92,7 +93,10 @@ def parse_article(soup: BeautifulSoup):
   
 @app.get("/")
 def index():
-    months = range(7,13)
+    now = datetime.now()
+    # Iterate from the current month down to July (7). 
+    # If you want to go all the way to January, change the 6 to 0.
+    months = range(now.month, 6, -1)
     news_results = []
     for month in months:
         html = get_month_html(month)
