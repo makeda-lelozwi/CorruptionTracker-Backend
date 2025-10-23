@@ -3,9 +3,6 @@ import httpx
 from selectolax.parser import HTMLParser
 from urllib.parse import urljoin
 import time
-from datetime import date
-
-
 
 app = FastAPI()
 
@@ -83,12 +80,12 @@ def parse_article(html):
         print("-------------------------------------------------------------------------")
         
     print("loop finished")
-
-def main():
-
+  
+@app.get("/")
+def index():
     months = range(7,13)
     news_results = []
-    for index, month in months:
+    for month in months:
         html = get_month_html(month)
 
         if not html:
@@ -96,16 +93,11 @@ def main():
 
         for title, link, date in parse_news_page(html):
             if any(keyword.lower() in title.lower() for keyword in FILTER_KEYWORDS):
-                print(f"{title}\n{date}\n")
-                page_html = get_page_html(link)
-                parse_article(page_html)
-            news_results.append({
+                news_results.append({
                 "title": title,
                 "link": link,
                 "date": date
-            })
+                })
         time.sleep(2)
-    
-
-if __name__ == "__main__":
-    main()
+    return {"news": news_results}
+   
