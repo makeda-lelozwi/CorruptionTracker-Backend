@@ -3,8 +3,16 @@ import httpx
 from selectolax.parser import HTMLParser
 from urllib.parse import urljoin
 import time
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 BASE_URL = "https://www.parliament.gov.za/news"
 HEADERS = {
