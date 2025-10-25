@@ -1,6 +1,8 @@
 import scrapy 
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
+from ..items import ScraperItem
+from scrapy.loader import ItemLoader
 
 class MeetingsSpider(CrawlSpider):
     name = "meetings"
@@ -14,12 +16,14 @@ class MeetingsSpider(CrawlSpider):
         Rule(LinkExtractor(allow=r'committee-meeting/\d+/'), callback='parse_meeting', follow=True),
     )
 
-    def parse_meeting(self, response):     
-        yield {
-                'title': response.css("header.committee-header h1::text").get(),
-                'date': response.css("h5.date::text").get(),
-                'video_link': response.css("div.meeting-summary p a::attr(href)").get(),
-                'summary': response.css("div.meeting-summary p::text").get(),
-                'full_minutes': response.css("div.full-minutes p::text").get(),
-        }
+    def parse_meeting(self, response):  
+        l = ItemLoader(item = ScraperItem(), response=response)
+
+        l.add_css('title', "header.committee-header h1")
+        l.add_css('date', "h5.date")
+        l.add_css('video_link', "div.meeting-summary p a")
+        l.add_css('summary', "div.meeting-summary ")
+        # l.add_css('full_minutes', "div.full-minutes p")
+
+        return l.load_item()
 

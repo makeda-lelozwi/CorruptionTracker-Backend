@@ -1,11 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 import httpx
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import time
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+import json
+import threading
+import subprocess
+from pathlib import Path
+
 app = FastAPI()
+DATA_FILE = Path(__file__).parent / "ad-hoc-minutes.json"
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,6 +20,30 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def run_crawl():
+    """
+    Runs the Scrapy spider as a subprocess and writes output to DATA_FILE.
+    Requires the project root to be the current working directory (where scrapy.cfg lives).
+    """
+    project_dir = Path(__file__).parent / "scraper"
+    output_file = Path(__file__).parent / "ad-hoc-minutes.json"
+    try:
+        res = subprocess.run(
+            ["scrapy", "crawl", "meetings", "-o", str(output_file)],
+            check=True,
+            cwd=str(project_dir),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        print("crawl stdout:", res.stdout)
+        print("crawl stderr:", res.stderr)
+    except subprocess.CalledProcessError as e:
+        print("crawl failed:", e.returncode)
+        print("stdout:", e.stdout)
+        print("stderr:", e.stderr)
+
 
 BASE_URL = "https://www.parliament.gov.za/news"
 HEADERS = {
@@ -90,7 +120,8 @@ def parse_article(soup: BeautifulSoup):
         print("-------------------------------------------------------------------------")
         
     print("loop finished")
-  
+
+
 @app.get("/")
 def index():
     now = datetime.now()
@@ -114,3 +145,18 @@ def index():
         time.sleep(2)
     return {"news": news_results}
    
+@app.get("/meetings")
+def get_meetings():
+    if not DATA_FILE.exists():
+        return []
+    try:
+        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    
+@app.post("/crawl")
+def trigger_crawl(background_tasks: BackgroundTasks):
+    # trigger a crawl in the background and return immediately
+    background_tasks.add_task(run_crawl)
+    return {"status": "crawl started"}
+    
