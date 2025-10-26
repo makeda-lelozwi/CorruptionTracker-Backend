@@ -26,6 +26,7 @@ def run_crawl():
     Runs the Scrapy spider as a subprocess and writes output to DATA_FILE.
     Requires the project root to be the current working directory (where scrapy.cfg lives).
     """
+    print("Starting crawl...")
     project_dir = Path(__file__).parent / "scraper"
     output_file = Path(__file__).parent / "ad-hoc-minutes.json"
     try:
@@ -39,6 +40,7 @@ def run_crawl():
         )
         print("crawl stdout:", res.stdout)
         print("crawl stderr:", res.stderr)
+        print("crawl completed successfully")
     except subprocess.CalledProcessError as e:
         print("crawl failed:", e.returncode)
         print("stdout:", e.stdout)
