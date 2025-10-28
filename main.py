@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, BackgroundTasks
 import httpx
 from bs4 import BeautifulSoup
@@ -6,7 +7,6 @@ import time
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import json
-import threading
 import subprocess
 from pathlib import Path
 
@@ -123,7 +123,21 @@ def parse_article(soup: BeautifulSoup):
         
     print("loop finished")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifecycle events for the FastAPI app"""
+    # Startup: run the crawler
+    print("Triggering initial crawl on startup...")
+    background_tasks = BackgroundTasks()
+    background_tasks.add_task(run_crawl)
+    await background_tasks()
+    
+    yield  # Server is running
+    
+    # Shutdown: cleanup if needed
+    print("Shutting down...")
 
+app = FastAPI(lifespan=lifespan)
 @app.get("/")
 def index():
     now = datetime.now()
