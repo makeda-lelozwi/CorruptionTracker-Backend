@@ -29,6 +29,36 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle events for the FastAPI app"""
+  # Startup: seed news if DB is empty
+    db = SessionLocal()
+    try:
+        count = db.query(models.NewsArticle).count()
+        if count == 0:
+            print("No news articles found. Seeding...")
+            now = datetime.now()
+            if now.month >= 7:
+                month_year_pairs = [(now.year, m) for m in range(now.month, 6, -1)]
+            else:
+                month_year_pairs = (
+                    [(now.year, m) for m in range(now.month, 0, -1)]
+                    + [(now.year - 1, m) for m in range(12, 6, -1)]
+                )
+ 
+            added = 0
+            for year, month in month_year_pairs:
+                html = get_month_html(month, year)
+                if not html:
+                    continue
+                added += save_articles(db, html)
+                time.sleep(2)
+ 
+            db.commit()
+            print(f"Seeded {added} news articles.")
+        else:
+            print(f"DB already has {count} news articles. Skipping seed.")
+    finally:
+        db.close()
+
     # Startup: run the crawler
     print("Triggering initial crawl on startup...")
     background_tasks = BackgroundTasks()
