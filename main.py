@@ -162,7 +162,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 @app.get("/")
-def index():
+def index(db: db_dependency):
     now = datetime.now()
     # Iterate from current month down to July (7). If we're before July,
     # include Jan..current for this year and Jul..Dec for last year.
@@ -180,14 +180,34 @@ def index():
         if not html:
             continue
 
-        for title, link, date in parse_news_page(html):
+        for title, link, date_str in parse_news_page(html):
             if any(keyword.lower() in title.lower() for keyword in FILTER_KEYWORDS):
                 news_results.append({
                 "title": title,
                 "link": link,
-                "date": date
+                "date": date_str
                 })
+
+                # Persist to DB if not already saved
+                existing = db.query(models.NewsArticle).filter(
+                    models.NewsArticle.source_url == link
+                ).first()
+                if not existing:
+                    parsed_date = None
+                    try:
+                        parsed_date = datetime.strptime(date_str, "%d %B %Y").date()
+                    except (ValueError, TypeError):
+                        pass
+                    article = models.NewsArticle(
+                        title=title,
+                        source_url=link,
+                        published_on=parsed_date,
+                        source_name="parliament.gov.za",
+                    )
+                    db.add(article)
         time.sleep(2)
+
+    db.commit()
     return {"news": news_results}
    
 @app.get("/meetings")
