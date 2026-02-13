@@ -163,39 +163,34 @@ app.add_middleware(
 )
 @app.get("/")
 def index(db: db_dependency):
+    today = datetime.now().date()
+ 
+    latest = db.query(models.NewsArticle).order_by(
+        models.NewsArticle.published_on.desc()
+    ).first()
+ 
+    if latest and latest.published_on and today <= latest.published_on:
+        return {
+            "news": {
+                "title": latest.title,
+                "link": latest.source_url,
+                "date": str(latest.published_on),
+            }
+        }
+
     now = datetime.now()
-    # Iterate from current month down to July (7). If we're before July,
-    # include Jan..current for this year and Jul..Dec for last year.
-    if now.month >= 7:
-        month_year_pairs = [(now.year, m) for m in range(now.month, 6, -1)]
-    else:
-        month_year_pairs = (
-            [(now.year, m) for m in range(now.month, 0, -1)]
-            + [(now.year - 1, m) for m in range(12, 6, -1)]
-        )
-    news_results = []
-    for year, month in month_year_pairs:
-        html = get_month_html(month, year)
+    html = get_month_html(now.month, now.year)
 
-        if not html:
-            continue
-
+    if html:
         for title, link, date_str in parse_news_page(html):
             if any(keyword.lower() in title.lower() for keyword in FILTER_KEYWORDS):
-                news_results.append({
-                "title": title,
-                "link": link,
-                "date": date_str
-                })
-
-                # Persist to DB if not already saved
                 existing = db.query(models.NewsArticle).filter(
                     models.NewsArticle.source_url == link
                 ).first()
                 if not existing:
                     parsed_date = None
                     try:
-                        parsed_date = datetime.strptime(date_str, "%d %B %Y").date()
+                        parsed_date = datetime.strptime(date_str, "%d %b %Y %I:%M%p").date()
                     except (ValueError, TypeError):
                         pass
                     article = models.NewsArticle(
@@ -205,10 +200,20 @@ def index(db: db_dependency):
                         source_name="parliament.gov.za",
                     )
                     db.add(article)
-        time.sleep(2)
 
     db.commit()
-    return {"news": news_results}
+
+    latest = db.query(models.NewsArticle).order_by(
+        models.NewsArticle.published_on.desc()
+    ).first()
+
+    return {
+        "news": {
+            "title": latest.title,
+            "link": latest.source_url,
+            "date": str(latest.published_on),
+        } if latest else None
+    }
    
 @app.get("/meetings")
 def get_meetings():
