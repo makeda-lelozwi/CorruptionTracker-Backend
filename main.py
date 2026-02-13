@@ -219,6 +219,48 @@ def get_meetings():
     except Exception:
         return []
     
+@app.post("/seed")
+def seed_news(db: db_dependency):
+    now = datetime.now()
+    if now.month >= 7:
+        month_year_pairs = [(now.year, m) for m in range(now.month, 6, -1)]
+    else:
+        month_year_pairs = (
+            [(now.year, m) for m in range(now.month, 0, -1)]
+            + [(now.year - 1, m) for m in range(12, 6, -1)]
+        )
+
+    count = 0
+    for year, month in month_year_pairs:
+        html = get_month_html(month, year)
+        if not html:
+            continue
+
+        for title, link, date_str in parse_news_page(html):
+            if any(keyword.lower() in title.lower() for keyword in FILTER_KEYWORDS):
+                existing = db.query(models.NewsArticle).filter(
+                    models.NewsArticle.source_url == link
+                ).first()
+                if not existing:
+                    parsed_date = None
+                    try:
+                        parsed_date = datetime.strptime(date_str, "%d %b %Y %I:%M%p").date()
+                    except (ValueError, TypeError) as e:
+                        print(f" Date parse failed for '{date_str}': {e}")
+                    print(f"Saving: '{title}' | raw date: '{date_str}' | parsed date: '{parsed_date}'")
+                    article = models.NewsArticle(
+                        title=title,
+                        source_url=link,
+                        published_on=parsed_date,
+                        source_name="parliament.gov.za",
+                    )
+                    db.add(article)
+                    count += 1
+        time.sleep(2)
+
+    db.commit()
+    return {"status": "seeded", "articles_added": count}
+
 @app.post("/crawl")
 def trigger_crawl(background_tasks: BackgroundTasks):
     # trigger a crawl in the background and return immediately
