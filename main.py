@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, Depends
 import httpx
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -9,8 +9,14 @@ from datetime import datetime
 import json
 import subprocess
 from pathlib import Path
+import models
+from database import engine, SessionLocal
+from sqlalchemy.orm import Session
+from typing import Annotated
 
 app = FastAPI()
+models.Base.metadata.create_all(bind=engine)
+
 DATA_FILE = Path(__file__).parent / "ad-hoc-minutes.json"
 
 app.add_middleware(
@@ -122,6 +128,15 @@ def parse_article(soup: BeautifulSoup):
         print("-------------------------------------------------------------------------")
         
     print("loop finished")
+
+def get_db():
+  db = SessionLocal()
+  try:
+    yield db
+  finally:
+    db.close()
+
+db_dependency = Annotated[Session, Depends(get_db)]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
