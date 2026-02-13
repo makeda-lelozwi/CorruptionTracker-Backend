@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: corruption-tracker
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: URL_DATABASE
+        fromDatabase:
+          name: corruption-tracker-db
+          property: connectionURI
+      - key: PYTHON_VERSION
+        value: "3.13"
+
+databases:
+  - name: corruption-tracker-db
+    plan: free
+    databaseName: corruption_tracker
+    postgresMajorVersion: "17"
