@@ -29,7 +29,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle events for the FastAPI app"""
-  # Startup: seed news if DB is empty
+    # Startup: seed news if DB is empty
     db = SessionLocal()
     try:
         count = db.query(models.NewsArticle).count()
