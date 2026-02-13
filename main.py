@@ -62,7 +62,7 @@ FILTER_KEYWORDS = [
     "Commissioner", "Allegations", "Ad Hoc Committee"
 ]
 
-def get_month_html(month:int, year:int=2025) -> BeautifulSoup | None:
+def get_month_html(month:int, year:int) -> BeautifulSoup | None:
     # Fetch HTML for a specific month/year (POST req)
     print(f"Getting news for {month}")
     payload = {"newDate": f"{month} {year}"}
@@ -149,12 +149,18 @@ app.add_middleware(
 @app.get("/")
 def index():
     now = datetime.now()
-    # Iterate from the current month down to July (7). 
-    # If you want to go all the way to January, change the 6 to 0.
-    months = range(now.month, 6, -1)
+    # Iterate from current month down to July (7). If we're before July,
+    # include Jan..current for this year and Jul..Dec for last year.
+    if now.month >= 7:
+        month_year_pairs = [(now.year, m) for m in range(now.month, 6, -1)]
+    else:
+        month_year_pairs = (
+            [(now.year, m) for m in range(now.month, 0, -1)]
+            + [(now.year - 1, m) for m in range(12, 6, -1)]
+        )
     news_results = []
-    for month in months:
-        html = get_month_html(month)
+    for year, month in month_year_pairs:
+        html = get_month_html(month, year)
 
         if not html:
             continue
