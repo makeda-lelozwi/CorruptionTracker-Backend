@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, BackgroundTasks, Depends
+from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException
 import time
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
+from datetime import date, datetime
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -31,6 +31,7 @@ def serialize_meeting_summary(meeting: models.MeetingSummary) -> dict:
     return {
         "title": meeting.title,
         "date": meeting.raw_date,
+        "meeting_date": meeting.meeting_date.isoformat() if meeting.meeting_date else None,
         "video_link": meeting.video_link,
         "summary": meeting.summary,
     }
@@ -174,6 +175,23 @@ def get_meetings(db: db_dependency):
     ).all()
 
     return [serialize_meeting_summary(meeting) for meeting in meetings]
+
+
+@app.get("/meetings/{meeting_date}")
+def get_meeting_by_date(meeting_date: date, db: db_dependency):
+    ensure_meeting_summaries(db)
+
+    meeting = db.query(models.MeetingSummary).filter(
+        models.MeetingSummary.meeting_date == meeting_date
+    ).order_by(models.MeetingSummary.id.desc()).first()
+
+    if not meeting:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No meeting summary found for {meeting_date.isoformat()}",
+        )
+
+    return serialize_meeting_summary(meeting)
     
 @app.post("/seed")
 def seed_news(db: db_dependency):
