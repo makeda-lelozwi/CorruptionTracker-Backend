@@ -3,7 +3,6 @@ from fastapi import FastAPI, BackgroundTasks, Depends
 import time
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-import json
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -13,6 +12,7 @@ from utils import (
     get_month_html,
     save_articles,
     run_crawl,
+    sync_meeting_summaries,
 )
 
 models.Base.metadata.create_all(bind=engine)
@@ -25,6 +25,43 @@ def get_db():
     db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+
+def serialize_meeting_summary(meeting: models.MeetingSummary) -> dict:
+    return {
+        "title": meeting.title,
+        "date": meeting.raw_date,
+        "video_link": meeting.video_link,
+        "summary": meeting.summary,
+    }
+
+
+def ensure_meeting_summaries(db: Session) -> None:
+    if db.query(models.MeetingSummary).count() > 0 or not DATA_FILE.exists():
+        return
+
+    inserted, updated = sync_meeting_summaries(db)
+    db.commit()
+    print(
+        f"Seeded meeting summaries from file. Inserted: {inserted}, Updated: {updated}"
+    )
+
+
+def refresh_meeting_summaries():
+    run_crawl()
+
+    db = SessionLocal()
+    try:
+        inserted, updated = sync_meeting_summaries(db)
+        db.commit()
+        print(
+            f"Synced meeting summaries after crawl. Inserted: {inserted}, Updated: {updated}"
+        )
+    except Exception as exc:
+        db.rollback()
+        print(f"Meeting summary sync failed: {exc}")
+    finally:
+        db.close()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -56,13 +93,23 @@ async def lifespan(app: FastAPI):
             print(f"Seeded {added} news articles.")
         else:
             print(f"DB already has {count} news articles. Skipping seed.")
+
+        meeting_count = db.query(models.MeetingSummary).count()
+        if meeting_count == 0:
+            inserted, updated = sync_meeting_summaries(db)
+            db.commit()
+            print(
+                f"Seeded {inserted} meeting summaries and updated {updated} existing rows."
+            )
+        else:
+            print(f"DB already has {meeting_count} meeting summaries. Skipping seed.")
     finally:
         db.close()
 
     # Startup: run the crawler
     print("Triggering initial crawl on startup...")
     background_tasks = BackgroundTasks()
-    background_tasks.add_task(run_crawl)
+    background_tasks.add_task(refresh_meeting_summaries)
     await background_tasks()
     
     yield  # Server is running
@@ -118,13 +165,15 @@ def index(db: db_dependency):
     }
    
 @app.get("/meetings")
-def get_meetings():
-    if not DATA_FILE.exists():
-        return []
-    try:
-        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        return []
+def get_meetings(db: db_dependency):
+    ensure_meeting_summaries(db)
+
+    meetings = db.query(models.MeetingSummary).order_by(
+        models.MeetingSummary.meeting_date.desc(),
+        models.MeetingSummary.id.desc(),
+    ).all()
+
+    return [serialize_meeting_summary(meeting) for meeting in meetings]
     
 @app.post("/seed")
 def seed_news(db: db_dependency):
@@ -152,5 +201,5 @@ def seed_news(db: db_dependency):
 @app.post("/crawl")
 def trigger_crawl(background_tasks: BackgroundTasks):
     # trigger a crawl in the background and return immediately
-    background_tasks.add_task(run_crawl)
+    background_tasks.add_task(refresh_meeting_summaries)
     return {"status": "crawl started"}
