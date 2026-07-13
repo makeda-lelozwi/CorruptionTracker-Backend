@@ -1,5 +1,14 @@
-<div
-  class="graph-container"
+<section
   data-controller="person-graph"
   data-person-graph-url-value="<%= person_graph_data_path %>"
-></div>
+>
+  <div
+    class="graph-container"
+    data-person-graph-target="canvas"
+  ></div>
+
+  <p
+    class="graph-summary"
+    data-person-graph-target="summary"
+  ></p>
+</section>

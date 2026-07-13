@@ -2,6 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 import cytoscape from "cytoscape"
 // Connects to data-controller="person-graph"
 export default class extends Controller {
+  static targets = ["canvas", "summary"]
+
   static values = {
     url: String
   }
@@ -18,11 +20,13 @@ export default class extends Controller {
         throw new Error("Graph request failed")
       }
 
-      const elements = await response.json()
+      const data = await response.json()
+
+      this.summaryTarget.textContent = data.narrative
 
       this.graph = cytoscape({
-        container: this.element,
-        elements: elements,
+        container: this.canvasTarget,
+        elements: data.elements,
 
         style: [
           {
@@ -52,7 +56,7 @@ export default class extends Controller {
         }
       })
     } catch (error) {
-      this.element.textContent = "Unable to load the relationship graph."
+      this.canvasTarget.textContent = "Unable to load the relationship graph."
       console.error(error)
     }
   }

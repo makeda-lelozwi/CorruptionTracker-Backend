@@ -15,10 +15,10 @@ class PersonGraphsController < ApplicationController
       labels(connectedNode)[0] AS connectedNodeType,
       connectedNode AS connectedNodeDetails
   CYPHER
-  
+
   def show
   end
-  
+
   def data
     rows = Neo4j::Client.new.query(
       QUERY,
@@ -27,7 +27,10 @@ class PersonGraphsController < ApplicationController
       }
     )
 
-    render json: cytoscape_elements(rows)
+    render json: {
+      elements: cytoscape_elements(rows),
+      narrative: PersonGraphNarrative.new(rows, pronoun: "He").call
+    }
   rescue Neo4j::Client::Error => error
     Rails.logger.error("Neo4j graph request failed: #{error.class}")
 
