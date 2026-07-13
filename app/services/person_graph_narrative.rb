@@ -1,7 +1,6 @@
 class PersonGraphNarrative
-  def initialize(rows, pronoun: "They")
+  def initialize(rows)
     @rows = rows
-    @pronoun = pronoun
   end
 
   def call
@@ -16,7 +15,7 @@ class PersonGraphNarrative
   end
 
   private
-    attr_reader :rows, :pronoun
+    attr_reader :rows
 
     def person_name
       rows.first.fetch("personName")
@@ -43,7 +42,7 @@ class PersonGraphNarrative
       allegations = rows_for("SUBJECT_OF").map { |row| connected_name(row) }
       return if allegations.empty?
 
-      "#{pronoun} is the subject of allegations concerning #{allegations.to_sentence}."
+      "#{person_name} is the subject of allegations concerning #{allegations.to_sentence}."
     end
 
     def associations_sentence
@@ -61,7 +60,7 @@ class PersonGraphNarrative
 
       return if clauses.empty?
 
-      "#{pronoun} is also #{clauses.to_sentence(last_word_connector: " and ")}."
+      "#{person_name} is also #{clauses.to_sentence(last_word_connector: " and ")}."
     end
 
     def events_sentence

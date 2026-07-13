@@ -14,6 +14,10 @@ Rails.application.routes.draw do
   root "home#show"
 
   get "person_graphs/show", to: "person_graphs#show"
+  get "person_graphs/people",
+    to: "person_graphs#people",
+    as: :person_graph_people,
+    defaults: { format: :json }
   get "person_graphs/data",
     to: "person_graphs#data",
     as: :person_graph_data,

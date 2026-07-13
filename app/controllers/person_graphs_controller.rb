@@ -1,5 +1,14 @@
 class PersonGraphsController < ApplicationController
-   QUERY = <<~CYPHER.squish
+  EXTERNAL_ID_PATTERN = /\Aperson:[a-zA-Z0-9._-]+\z/
+
+  PEOPLE_QUERY = <<~CYPHER.squish
+    MATCH (person:Person)--()
+    WHERE person.externalId STARTS WITH $prefix
+    RETURN DISTINCT person.externalId AS externalId, person.name AS name
+    ORDER BY toLower(coalesce(person.name, person.externalId))
+  CYPHER
+
+  QUERY = <<~CYPHER.squish
     MATCH (p:Person {externalId: $external_id})-[r]-(connectedNode)
     RETURN
       p,
@@ -19,24 +28,40 @@ class PersonGraphsController < ApplicationController
   def show
   end
 
+  def people
+    rows = Neo4j::Client.new.query(
+      PEOPLE_QUERY,
+      parameters: { prefix: "person:" }
+    )
+
+    render json: rows.map { |row|
+      {
+        external_id: row.fetch("externalId"),
+        name: row["name"].presence || row.fetch("externalId")
+      }
+    }
+  rescue Neo4j::Client::Error => error
+    render_neo4j_error(error)
+  end
+
   def data
+    external_id = params[:external_id].to_s
+
+    unless EXTERNAL_ID_PATTERN.match?(external_id)
+      return render json: { error: "Invalid person external ID" }, status: :unprocessable_entity
+    end
+
     rows = Neo4j::Client.new.query(
       QUERY,
-      parameters: {
-        external_id: "person:lt-general-shadrack-sibiya"
-      }
+      parameters: { external_id: external_id }
     )
 
     render json: {
       elements: cytoscape_elements(rows),
-      narrative: PersonGraphNarrative.new(rows, pronoun: "He").call
+      narrative: PersonGraphNarrative.new(rows).call
     }
   rescue Neo4j::Client::Error => error
-    Rails.logger.error("Neo4j graph request failed: #{error.class}")
-
-    render json: {
-      error: "Unable to load graph"
-    }, status: :bad_gateway
+    render_neo4j_error(error)
   end
 
   private
@@ -93,5 +118,10 @@ class PersonGraphsController < ApplicationController
         properties["title"] ||
         properties["externalId"] ||
         node.fetch("labels").first
+    end
+
+    def render_neo4j_error(error)
+      Rails.logger.error("Neo4j graph request failed: #{error.class}")
+      render json: { error: "Unable to load graph" }, status: :bad_gateway
     end
 end

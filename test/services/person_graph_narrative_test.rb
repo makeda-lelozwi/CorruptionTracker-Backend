@@ -2,15 +2,15 @@ require "test_helper"
 
 class PersonGraphNarrativeTest < ActiveSupport::TestCase
   test "groups graph relationships into a cautious narrative" do
-    narrative = PersonGraphNarrative.new(rows, pronoun: "He").call
+    narrative = PersonGraphNarrative.new(rows).call
 
     assert_equal(
         "According to the source material represented in the current dataset, " \
         "Shadrack Sibiya is identified as Deputy National Commissioner for Crime Detection " \
         "within the South African Police Service. " \
-        "He is the subject of allegations concerning R580 million irregular expenditure and " \
+        "Shadrack Sibiya is the subject of allegations concerning R580 million irregular expenditure and " \
         "R3.5 million unlawful benefit and Association with criminal syndicates. " \
-        "He is also alleged in the source material to be a member of The Big Five cartel and " \
+        "Shadrack Sibiya is also alleged in the source material to be a member of The Big Five cartel and " \
         "recorded as associated with Vusimuzi “Cat” Matlala. " \
         "The dataset further connects Shadrack Sibiya to the event “Instruction to Disband PKTT”.",
       narrative
