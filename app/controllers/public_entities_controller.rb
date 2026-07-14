@@ -1,5 +1,5 @@
 class PublicEntitiesController < ApplicationController
-  EXTERNAL_ID_PATTERN = /\A[a-z][a-z0-9_-]*:[a-zA-Z0-9._-]+\z/
+  EXTERNAL_ID_PATTERN = /\A[a-z][a-z0-9_-]*:[a-zA-Z0-9._:-]+\z/
 
   before_action :set_entry
 

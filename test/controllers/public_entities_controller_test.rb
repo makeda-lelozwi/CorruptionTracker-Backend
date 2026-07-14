@@ -49,6 +49,31 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "accepts testimony IDs containing more than one colon" do
+    testimony = neo4j_node(
+      "Testimony",
+      "testimony:madlanga:2025-09-19",
+      "Day 3 Testimony",
+      "testimony-node"
+    )
+    client = fake_client([ {
+      "subject" => testimony,
+      "relationship" => nil,
+      "relationshipType" => nil,
+      "source" => nil,
+      "target" => nil,
+      "sourceLabel" => nil,
+      "targetLabel" => nil
+    } ])
+
+    with_neo4j_client(client) do
+      get testimony_url(external_id: "testimony:madlanga:2025-09-19")
+    end
+
+    assert_response :success
+    assert_select "h1", "Day 3 Testimony"
+  end
+
   test "returns a safe error page for a Neo4j failure" do
     client = Object.new
     client.define_singleton_method(:query) { |_statement, parameters:| raise Neo4j::Client::RequestError, "private detail" }
