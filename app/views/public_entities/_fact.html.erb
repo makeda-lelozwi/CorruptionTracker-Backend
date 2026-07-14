@@ -1,0 +1,33 @@
+<article class="fact-card">
+  <p class="fact-card__sentence"><%= fact[:sentence] %></p>
+
+  <p class="fact-card__entities">
+    <span>Source: <%= link_to fact[:source][:name], fact[:source][:path] %></span>
+    <span>Target: <%= link_to fact[:target][:name], fact[:target][:path] %></span>
+  </p>
+
+  <% if fact[:quote].present? %>
+    <blockquote class="citation">
+      <p>“<%= fact[:quote] %>”</p>
+      <% if fact[:page].present? %><cite>Page <%= fact[:page] %></cite><% end %>
+    </blockquote>
+  <% elsif fact[:page].present? %>
+    <p class="citation-page">Supporting page: <%= fact[:page] %></p>
+  <% end %>
+
+  <% if fact[:metadata].any? %>
+    <dl class="fact-metadata">
+      <% fact[:metadata].each do |key, value| %>
+        <div>
+          <dt><%= key.humanize %></dt>
+          <dd><%= value %></dd>
+        </div>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <details class="fact-technical">
+    <summary>Relationship details</summary>
+    <code><%= fact[:pattern].join(" → ") %></code>
+  </details>
+</article>

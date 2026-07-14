@@ -13,13 +13,21 @@ Rails.application.routes.draw do
   # root "posts#index"
   root "home#show"
 
-  get "person_graphs/show", to: "person_graphs#show"
-  get "person_graphs/people",
-    to: "person_graphs#people",
-    as: :person_graph_people,
-    defaults: { format: :json }
-  get "person_graphs/data",
-    to: "person_graphs#data",
-    as: :person_graph_data,
-    defaults: { format: :json }
+  get "testimonies", to: "public_entities#index", defaults: { label: "Testimony" }, as: :testimonies
+  get "testimonies/:external_id", to: "public_entities#show", defaults: { label: "Testimony", format: false }, as: :testimony
+
+  get "people", to: "public_entities#index", defaults: { label: "Person" }, as: :people
+  get "people/:external_id", to: "public_entities#show", defaults: { label: "Person", format: false }, as: :person
+
+  get "organisations", to: "public_entities#index", defaults: { label: "Organisation" }, as: :organisations
+  get "organisations/:external_id", to: "public_entities#show", defaults: { label: "Organisation", format: false }, as: :organisation
+
+  get "events", to: "public_entities#index", defaults: { label: "Event" }, as: :events
+  get "events/:external_id", to: "public_entities#show", defaults: { label: "Event", format: false }, as: :event
+
+  get "allegations", to: "public_entities#index", defaults: { label: "Allegation" }, as: :allegations
+  get "allegations/:external_id", to: "public_entities#show", defaults: { label: "Allegation", format: false }, as: :allegation
+
+  get "evidence", to: "public_entities#index", defaults: { label: "Evidence" }, as: :evidence_index
+  get "evidence/:external_id", to: "public_entities#show", defaults: { label: "Evidence", format: false }, as: :evidence
 end

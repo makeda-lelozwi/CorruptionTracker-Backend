@@ -1,0 +1,38 @@
+<% content_for :title, "#{@entry.plural} | Corruption Tracker" %>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <%= link_to "Evidence web", root_path %>
+  <span aria-hidden="true">/</span>
+  <span><%= @entry.plural %></span>
+</nav>
+
+<header class="page-header page-header--compact">
+  <p class="eyebrow"><%= @entry.singular %> index</p>
+  <h1><%= @entry.plural %></h1>
+  <p class="page-introduction">Browse the <%= @entry.plural.downcase %> available in the public graph.</p>
+</header>
+
+<%= form_with url: PublicEntityCatalog.index_path(@entry.label), method: :get, class: "search-form" do |form| %>
+  <%= form.label :q, "Search #{@entry.plural.downcase}" %>
+  <div class="search-form__controls">
+    <%= form.search_field :q, value: @query, placeholder: "Search a name, title or ID" %>
+    <%= form.submit "Search" %>
+  </div>
+<% end %>
+
+<p class="search-summary"><%= pluralize(@entities.length, @entry.singular.downcase) %><%= " matched “#{@query}”" if @query.present? %>.</p>
+
+<% if @entities.any? %>
+  <ul class="entity-list entity-list--index">
+    <% @entities.each do |entity| %>
+      <li>
+        <%= link_to entity.fetch("name"), entity.fetch("path") %>
+        <% if entity["description"].present? %>
+          <p><%= truncate(entity["description"], length: 180) %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty-state">No <%= @entry.plural.downcase %> matched this search.</p>
+<% end %>
