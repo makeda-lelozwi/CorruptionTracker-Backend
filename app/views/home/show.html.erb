@@ -1,4 +1,47 @@
-<h1>Home#show</h1>
-<p>Find me in app/views/home/show.html.erb</p>
-<%= link_to "Shadrack Sibiya", person_graphs_show_path %>
+<% content_for :title, "Explore the evidence | Corruption Tracker" %>
 
+<header class="page-header">
+  <p class="eyebrow">Public evidence web</p>
+  <h1>Explore people, events and evidence</h1>
+  <p class="page-introduction">
+    Browse the relationships recorded in the current dataset. Written facts and their supporting details are shown before the graph.
+  </p>
+</header>
+
+<%= form_with url: root_path, method: :get, class: "search-form" do |form| %>
+  <%= form.label :q, "Search the evidence web" %>
+  <div class="search-form__controls">
+    <%= form.search_field :q, value: @query, placeholder: "Search a name, title or ID" %>
+    <%= form.submit "Search" %>
+  </div>
+<% end %>
+
+<% if @load_error %>
+  <p class="notice notice--error">The evidence web is temporarily unavailable. Please try again later.</p>
+<% elsif @query.present? %>
+  <p class="search-summary">Results matching “<%= @query %>”.</p>
+<% end %>
+
+<div class="entity-sections">
+  <% @sections.each do |section| %>
+    <section class="entity-section" aria-labelledby="<%= section[:entry].label.parameterize %>-heading">
+      <div class="entity-section__heading">
+        <div>
+          <h2 id="<%= section[:entry].label.parameterize %>-heading"><%= section[:entry].plural %></h2>
+          <p><%= pluralize(section[:count], section[:entry].singular.downcase) %></p>
+        </div>
+        <%= link_to "View all", PublicEntityCatalog.index_path(section[:entry].label) %>
+      </div>
+
+      <% if section[:entities].any? %>
+        <ul class="entity-list entity-list--preview">
+          <% section[:entities].each do |entity| %>
+            <li><%= link_to entity.fetch("name"), entity.fetch("path") %></li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-state">No <%= section[:entry].plural.downcase %> matched this search.</p>
+      <% end %>
+    </section>
+  <% end %>
+</div>

@@ -1,5 +1,12 @@
 # Corruption Tracker
 
+## Public evidence web
+
+The app presents the public parts of the Neo4j graph as browsable entity pages,
+plain-language facts, nearby citations, and a small supporting graph. See
+[docs/evidence_web.md](docs/evidence_web.md) for the implementation guide,
+confirmed graph findings, wording rules, and test instructions.
+
 ## Neo4j Aura
 
 The app keeps SQLite as its Active Record database and connects to Neo4j Aura

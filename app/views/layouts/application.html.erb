@@ -24,6 +24,11 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="site-header">
+      <%= link_to "Corruption Tracker", root_path, class: "site-header__brand" %>
+    </header>
+    <main class="site-main">
+      <%= yield %>
+    </main>
   </body>
 </html>

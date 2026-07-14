@@ -10,6 +10,12 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Add more helper methods to be used by all tests here...
+    def with_neo4j_client(client)
+      original_new = Neo4j::Client.method(:new)
+      Neo4j::Client.singleton_class.define_method(:new) { |*| client }
+      yield
+    ensure
+      Neo4j::Client.singleton_class.define_method(:new, original_new)
+    end
   end
 end
