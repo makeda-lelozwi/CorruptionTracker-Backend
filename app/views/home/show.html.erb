@@ -1,47 +1,70 @@
-<% content_for :title, "Explore the evidence | Corruption Tracker" %>
-
-<header class="page-header">
-  <p class="eyebrow">Public evidence web</p>
-  <h1>Explore people, events and evidence</h1>
-  <p class="page-introduction">
-    Browse the relationships recorded in the current dataset. Written facts and their supporting details are shown before the graph.
-  </p>
-</header>
-
-<%= form_with url: root_path, method: :get, class: "search-form" do |form| %>
-  <%= form.label :q, "Search the evidence web" %>
-  <div class="search-form__controls">
-    <%= form.search_field :q, value: @query, placeholder: "Search a name, title or ID" %>
-    <%= form.submit "Search" %>
-  </div>
-<% end %>
+<% content_for :title, "Corruption Tracker" %>
 
 <% if @load_error %>
-  <p class="notice notice--error">The evidence web is temporarily unavailable. Please try again later.</p>
-<% elsif @query.present? %>
-  <p class="search-summary">Results matching “<%= @query %>”.</p>
-<% end %>
-
-<div class="entity-sections">
-  <% @sections.each do |section| %>
-    <section class="entity-section" aria-labelledby="<%= section[:entry].label.parameterize %>-heading">
-      <div class="entity-section__heading">
-        <div>
-          <h2 id="<%= section[:entry].label.parameterize %>-heading"><%= section[:entry].plural %></h2>
-          <p><%= pluralize(section[:count], section[:entry].singular.downcase) %></p>
-        </div>
-        <%= link_to "View all", PublicEntityCatalog.index_path(section[:entry].label) %>
+  <p class="notice notice--error home-notice">The evidence web is temporarily unavailable. Please try again later.</p>
+<% else %>
+  <% if @latest_testimony %>
+    <section class="latest-testimony" aria-labelledby="latest-testimony-heading">
+      <h1 id="latest-testimony-heading">Latest testimony hearing</h1>
+      <div class="latest-testimony__details">
+        <p><%= testimony_heading(@latest_testimony) %></p>
+        <p><%= @latest_testimony["witness"] %></p>
       </div>
 
-      <% if section[:entities].any? %>
-        <ul class="entity-list entity-list--preview">
-          <% section[:entities].each do |entity| %>
-            <li><%= link_to entity.fetch("name"), entity.fetch("path") %></li>
-          <% end %>
-        </ul>
-      <% else %>
-        <p class="empty-state">No <%= section[:entry].plural.downcase %> matched this search.</p>
+      <% if @latest_testimony["allegations"].any? %>
+        <div class="latest-testimony__topics">
+          <h2><%= @latest_testimony.fetch("title").to_s[/Day\s+\d+/i] || "This testimony" %> discusses:</h2>
+          <ul>
+            <% @latest_testimony["allegations"].each do |allegation| %>
+              <li>allegations of “<%= allegation.fetch("name") %>”</li>
+            <% end %>
+          </ul>
+        </div>
       <% end %>
+
+      <%= link_to "read more >", @latest_testimony.fetch("path"), class: "latest-testimony__link" %>
     </section>
   <% end %>
-</div>
+
+  <section class="home-index" id="index" aria-labelledby="index-heading">
+    <h2 id="index-heading">Index</h2>
+
+    <% if @query.present? %>
+      <p class="home-index__summary">Results matching “<%= @query %>”.</p>
+    <% end %>
+
+    <div class="home-index__grid">
+      <% @sections.each do |section| %>
+        <section class="home-index__section" aria-labelledby="<%= section[:entry].label.parameterize %>-heading">
+          <h3 id="<%= section[:entry].label.parameterize %>-heading">
+            <%= link_to section[:entry].plural, PublicEntityCatalog.index_path(section[:entry].label) %>
+          </h3>
+
+          <% if section[:entities].any? %>
+            <ul>
+              <% section[:entities].first(5).each do |entity| %>
+                <li><%= link_to entity.fetch("name"), entity.fetch("path") %></li>
+              <% end %>
+            </ul>
+
+            <% if section[:entities].length > 5 %>
+              <details class="home-index__more">
+                <summary>
+                  <span class="home-index__more-label">show more &gt;</span>
+                  <span class="home-index__less-label">show less &gt;</span>
+                </summary>
+                <ul>
+                  <% section[:entities].drop(5).each do |entity| %>
+                    <li><%= link_to entity.fetch("name"), entity.fetch("path") %></li>
+                  <% end %>
+                </ul>
+              </details>
+            <% end %>
+          <% else %>
+            <p class="home-index__empty">No <%= section[:entry].plural.downcase %><%= " matched this search" if @query.present? %>.</p>
+          <% end %>
+        </section>
+      <% end %>
+    </div>
+  </section>
+<% end %>

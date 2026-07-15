@@ -13,7 +13,14 @@ class PublicEntityRepository
     ORDER BY toLower(coalesce(node.name, node.title, node.externalId))
     RETURN publicLabel, collect({
       externalId: node.externalId,
-      name: coalesce(node.name, node.title, node.externalId)
+      name: coalesce(node.name, node.title, node.externalId),
+      title: coalesce(node.title, node.name, node.externalId),
+      date: toString(node.date),
+      witness: node.witness,
+      allegations: [(node)-[:DISCUSSES]->(allegation:Allegation) | {
+        externalId: allegation.externalId,
+        name: coalesce(allegation.title, allegation.name, allegation.externalId)
+      }]
     }) AS entities
   CYPHER
 

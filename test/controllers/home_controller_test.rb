@@ -2,21 +2,35 @@ require "test_helper"
 
 class HomeControllerTest < ActionDispatch::IntegrationTest
   test "shows grouped public entity previews from the root route" do
-    client = fake_client([ {
-      "publicLabel" => "Person",
-      "entities" => [
-        { "externalId" => "person:alice", "name" => "Alice" }
-      ]
-    } ])
+    client = fake_client([
+      {
+        "publicLabel" => "Person",
+        "entities" => [
+          { "externalId" => "person:alice", "name" => "Alice" }
+        ]
+      },
+      {
+        "publicLabel" => "Testimony",
+        "entities" => [ {
+          "externalId" => "testimony:madlanga:2025-09-18",
+          "name" => "Day 2 - Alice Testimony",
+          "title" => "Day 2 - Alice Testimony",
+          "date" => "2025-09-18",
+          "witness" => "Alice",
+          "allegations" => []
+        } ]
+      }
+    ])
 
     with_neo4j_client(client) do
       get root_url
     end
 
     assert_response :success
-    assert_select "h1", "Explore people, events and evidence"
+    assert_select "h1", "Latest testimony hearing"
+    assert_select "a[href='/testimonies/testimony:madlanga:2025-09-18']", "read more >"
     assert_select "a[href='/people/person:alice']", "Alice"
-    assert_select ".entity-section", count: 6
+    assert_select ".home-index__section", count: 4
   end
 
   test "shows a safe error when Neo4j is unavailable" do
@@ -37,5 +51,5 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
       Object.new.tap do |client|
         client.define_singleton_method(:query) { |_statement, parameters:| rows }
       end
-  end
+    end
 end
