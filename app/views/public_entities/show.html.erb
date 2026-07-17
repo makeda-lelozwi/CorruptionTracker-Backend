@@ -54,8 +54,32 @@
     </section>
   <% end %>
 
+  <% if @graph[:elements][:edges].any? %>
+    <section
+      class="supporting-graph"
+      aria-labelledby="relationship-map"
+      data-controller="public-graph"
+    >
+      <div class="supporting-graph__heading">
+        <div>
+          <p class="dashboard-panel__label">Visual explorer</p>
+          <h2 id="relationship-map">Relationship map</h2>
+          <p>Select a node to open its public evidence page.</p>
+        </div>
+      </div>
+
+      <% if @graph[:omitted_node_count].positive? %>
+        <p class="notice">Showing a smaller neighbourhood. <%= pluralize(@graph[:omitted_node_count], "related node") %> omitted.</p>
+      <% end %>
+
+      <script type="application/json" data-public-graph-target="data"><%= raw json_escape(@graph[:elements].to_json) %></script>
+      <div class="graph-container" data-public-graph-target="canvas"></div>
+      <p class="graph-error" data-public-graph-target="error" hidden></p>
+      <noscript><p class="notice">The relationship map needs JavaScript. All relationships remain available above.</p></noscript>
+    </section>
+  <% end %>
+
   <section class="facts facts--connections" aria-labelledby="discussed-connections">
-    <h2 id="discussed-connections"><%= @entry.label == "Testimony" ? "Discussed in this testimony" : "Related to" %></h2>
 
     <% if related_entities.any? %>
       <ul class="connected-records connected-records--primary">
@@ -81,28 +105,4 @@
     <% end %>
   </section>
 
-  <% if @graph[:elements][:edges].any? %>
-    <section
-      class="supporting-graph"
-      aria-labelledby="relationship-map"
-      data-controller="public-graph"
-    >
-      <div class="supporting-graph__heading">
-        <div>
-          <p class="dashboard-panel__label">Visual explorer</p>
-          <h2 id="relationship-map">Relationship map</h2>
-          <p>Select a node to open its public evidence page.</p>
-        </div>
-      </div>
-
-      <% if @graph[:omitted_node_count].positive? %>
-        <p class="notice">Showing a smaller neighbourhood. <%= pluralize(@graph[:omitted_node_count], "related node") %> omitted.</p>
-      <% end %>
-
-      <script type="application/json" data-public-graph-target="data"><%= raw json_escape(@graph[:elements].to_json) %></script>
-      <div class="graph-container" data-public-graph-target="canvas"></div>
-      <p class="graph-error" data-public-graph-target="error" hidden></p>
-      <noscript><p class="notice">The relationship map needs JavaScript. All relationships remain available above.</p></noscript>
-    </section>
-  <% end %>
 </article>
