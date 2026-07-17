@@ -73,6 +73,97 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
     assert_equal "Allegations and complaints", fact[:lane]
   end
 
+  test "does not repeat the recipient for a presentation event" do
+    fact = build_result(
+      source_label: "Event",
+      relationship_type: "PRESENTED_TO",
+      target_label: "Person",
+      source_name: "Khumalo presented PKTT successes and operational workload to Minister Mchunu",
+      target_name: "Senzo Mchunu"
+    ).facts.first
+
+    assert_equal "Khumalo presented PKTT successes and operational workload to Senzo Mchunu.", fact[:sentence]
+    assert_equal "Communication", fact[:lane]
+  end
+
+  test "uses a complete briefing event title without repeating informed" do
+    fact = build_result(
+      source_label: "Event",
+      relationship_type: "INFORMED",
+      target_label: "Person",
+      source_name: "Masemola and Khumalo briefed Minister Mchunu on the Big Five syndicate",
+      target_name: "Senzo Mchunu"
+    ).facts.first
+
+    assert_equal "Masemola and Khumalo briefed Minister Mchunu on the Big Five syndicate.", fact[:sentence]
+    assert_equal "Communication", fact[:lane]
+  end
+
+  test "describes a reported associate naturally" do
+    fact = build_result(
+      source_label: "Person",
+      relationship_type: "ASSOCIATE_OF",
+      target_label: "Person",
+      source_name: "Brown Mogotsi",
+      target_name: "Senzo Mchunu"
+    ).facts.first
+
+    assert_equal "Brown Mogotsi is reported to be an associate of Senzo Mchunu.", fact[:sentence]
+    assert_equal "Roles and affiliations", fact[:lane]
+  end
+
+  test "does not repeat instruction in an issued instruction relationship" do
+    fact = build_result(
+      source_label: "Person",
+      relationship_type: "ISSUED_INSTRUCTION",
+      target_label: "Event",
+      source_name: "Senzo Mchunu",
+      target_name: "Instruction to Disband PKTT"
+    ).facts.first
+
+    assert_equal "Senzo Mchunu issued Instruction to Disband PKTT.", fact[:sentence]
+    assert_equal "Communication", fact[:lane]
+  end
+
+  test "describes the subject of an allegation without quotation marks" do
+    fact = build_result(
+      source_label: "Person",
+      relationship_type: "SUBJECT_OF",
+      target_label: "Allegation",
+      source_name: "Julius Mkhwanazi",
+      target_name: "Alleged abuse of EMPD for the benefit of Vusimuzi Matlala"
+    ).facts.first
+
+    assert_equal "Julius Mkhwanazi is the subject of the allegation of alleged abuse of EMPD for the benefit of Vusimuzi Matlala.", fact[:sentence]
+    assert_equal "Allegations and complaints", fact[:lane]
+  end
+
+  test "turns an establishment event title into a natural object" do
+    fact = build_result(
+      source_label: "Person",
+      relationship_type: "ESTABLISHED",
+      target_label: "Event",
+      source_name: "Cyril Ramaphosa",
+      target_name: "Establishment of the Madlanga Commission of Inquiry"
+    ).facts.first
+
+    assert_equal "Cyril Ramaphosa established the Madlanga Commission of Inquiry.", fact[:sentence]
+    assert_equal "Events and causality", fact[:lane]
+  end
+
+  test "turns an appointed event title into an appointment object" do
+    fact = build_result(
+      source_label: "Person",
+      relationship_type: "ORDERED",
+      target_label: "Event",
+      source_name: "Fannie Masemola",
+      target_name: "Lt Gen Patekile appointed to investigate misconduct allegations against Lt Gen Sibiya"
+    ).facts.first
+
+    assert_equal "Fannie Masemola ordered appointment of Lt Gen Patekile to investigate misconduct allegations against Lt Gen Sibiya.", fact[:sentence]
+    assert_equal "Events and causality", fact[:lane]
+  end
+
   test "identifies an allegation target in fallback wording" do
     fact = build_result(
       source_label: "Event",

@@ -27,7 +27,9 @@ class PublicGraphFactBuilder
     "RECEIVED_COMPLAINT" => "Allegations and complaints",
     "SENT_INFORMATION" => "Communication",
     "SENT_TO" => "Communication",
+    "PRESENTED_TO" => "Communication",
     "INFORMED" => "Communication",
+    "ISSUED_INSTRUCTION" => "Communication",
     "WARNED" => "Communication",
     "WARNED_ABOUT" => "Communication",
     "COMMUNICATED_WITH" => "Communication",
@@ -42,6 +44,8 @@ class PublicGraphFactBuilder
     "INVOLVES" => "Events and causality",
     "INVESTIGATED" => "Events and causality",
     "DISBANDED" => "Events and causality",
+    "ESTABLISHED" => "Events and causality",
+    "ORDERED" => "Events and causality",
     "MURDERED" => "Events and causality",
     "VICTIM" => "Events and causality",
     "OWNS" => "Procurement and ownership",
@@ -58,15 +62,24 @@ class PublicGraphFactBuilder
     [ "Event", "LED_TO", "Allegation" ] => Template.new(lane: "Events and causality", sentence: "%{source} is reported to have led to the allegation %{target}.", direction: :forward),
     [ "Person", "WORKS_FOR", "Organisation" ] => Template.new(lane: "Roles and affiliations", sentence: "%{source} is recorded as working for %{target}.", direction: :forward),
     [ "Event", "INVOLVES", "Person" ] => Template.new(lane: "Events and causality", sentence: "%{target} is reported to be involved in %{source}.", direction: :reverse),
-    [ "Person", "ASSOCIATE_OF", "Person" ] => Template.new(lane: "Roles and affiliations", sentence: "%{source} is recorded as associated with %{target}.", direction: :forward),
+    [ "Person", "ASSOCIATE_OF", "Person" ] => Template.new(lane: "Roles and affiliations", sentence: "%{source} is reported to be an associate of %{target}.", direction: :forward),
     [ "Evidence", "SUPPORTS", "Allegation" ] => Template.new(lane: "Evidence", sentence: "%{source} is recorded as supporting the allegation “%{target}”.", direction: :forward),
-    [ "Person", "SUBJECT_OF", "Allegation" ] => Template.new(lane: "Allegations and complaints", sentence: "%{source} is recorded as the subject of the allegation “%{target}”.", direction: :forward),
+    [ "Person", "SUBJECT_OF", "Allegation" ] => Template.new(
+      lane: "Allegations and complaints",
+      sentence: ->(source, target) { "#{source} is the subject of the allegation of #{target.sub(/\A\p{Lu}/) { |letter| letter.downcase }}." },
+      direction: :forward
+    ),
     [ "Person", "USED_INTERMEDIARY", "Person" ] => Template.new(lane: "Other connections", sentence: "%{source} is recorded as having used %{target} as an intermediary.", direction: :forward),
     [ "Testimony", "DISCUSSES", "Event" ] => Template.new(lane: "Testimony and sources", sentence: "%{source} discusses “%{target}”.", direction: :forward),
     [ "Event", "LED_TO", "Event" ] => Template.new(lane: "Events and causality", sentence: "%{source} led to %{target}.", direction: :forward),
     [ "Organisation", "INVESTIGATED", "Event" ] => Template.new(lane: "Events and causality", sentence: "%{source} is recorded as having investigated %{target}.", direction: :forward),
     [ "Organisation", "RECEIVED_COMPLAINT", "Event" ] => Template.new(lane: "Allegations and complaints", sentence: "%{source} is recorded as having received a complaint connected with %{target}.", direction: :forward),
     [ "Event", "RECEIVED_COMPLAINT", "Person" ] => Template.new(lane: "Allegations and complaints", sentence: "%{source} received by %{target}.", direction: :forward),
+    [ "Event", "PRESENTED_TO", "Person" ] => Template.new(
+      lane: "Communication",
+      sentence: ->(source, target) { "#{source.sub(/\s+to\s+(?:Minister\s+)?\S+\z/i, "")} to #{target}." },
+      direction: :forward
+    ),
     [ "Organisation", "SUBJECT_OF", "Allegation" ] => Template.new(lane: "Allegations and complaints", sentence: "%{source} is recorded as the subject of the allegation “%{target}”.", direction: :forward),
     [ "Person", "ALLEGED_MEMBER_OF", "Organisation" ] => Template.new(lane: "Roles and affiliations", sentence: "%{source} is alleged in the dataset to be a member of %{target}.", direction: :forward),
     [ "Person", "MURDERED", "Event" ] => Template.new(lane: "Events and causality", sentence: "%{source} is connected to %{target} through a relationship recorded as MURDERED.", direction: :forward),
@@ -74,7 +87,27 @@ class PublicGraphFactBuilder
     [ "Testimony", "GIVEN_BY", "Person" ] => Template.new(lane: "Testimony and sources", sentence: "%{source} is recorded as having been given by %{target}.", direction: :forward),
     [ "Allegation", "BROUGHT_COMPLAINT", "Organisation" ] => Template.new(lane: "Allegations and complaints", sentence: "%{source} is recorded as a complaint brought to %{target}.", direction: :forward),
     [ "Person", "RAISED", "Event" ] => Template.new(lane: "Events and causality", sentence: "%{source} raised the %{target}.", direction: :forward),
-    [ "Event", "INFORMED", "Person" ] => Template.new(lane: "Communication", sentence: "%{source} is recorded as having informed %{target}.", direction: :forward),
+    [ "Event", "INFORMED", "Person" ] => Template.new(
+      lane: "Communication",
+      sentence: lambda do |source, target|
+        source.match?(/\b(?:briefed|informed|notified)\b/i) ? "#{source}." : "#{source} is recorded as having informed #{target}."
+      end,
+      direction: :forward
+    ),
+    [ "Person", "ISSUED_INSTRUCTION", "Event" ] => Template.new(lane: "Communication", sentence: "%{source} issued %{target}.", direction: :forward),
+    [ "Person", "ESTABLISHED", "Event" ] => Template.new(
+      lane: "Events and causality",
+      sentence: ->(source, target) { "#{source} established #{target.sub(/\AEstablishment of\s+/i, "")}." },
+      direction: :forward
+    ),
+    [ "Person", "ORDERED", "Event" ] => Template.new(
+      lane: "Events and causality",
+      sentence: lambda do |source, target|
+        appointment = target.sub(/\A(.+?) appointed to (.+)\z/i, 'appointment of \1 to \2')
+        "#{source} ordered #{appointment}."
+      end,
+      direction: :forward
+    ),
     [ "Event", "INVESTIGATED", "Person" ] => Template.new(lane: "Events and causality", sentence: "%{target} is recorded as investigated in %{source}.", direction: :reverse),
     [ "Event", "VICTIM", "Person" ] => Template.new(lane: "Events and causality", sentence: "%{target} was the victim in %{source}.", direction: :reverse)
   }.freeze
@@ -149,7 +182,11 @@ class PublicGraphFactBuilder
     end
 
     def sentence_for(template, source, target, relationship_type)
-      return format(template.sentence, source: source[:name], target: target[:name]) if template
+      if template
+        return template.sentence.call(source[:name], target[:name]) if template.sentence.respond_to?(:call)
+
+        return format(template.sentence, source: source[:name], target: target[:name])
+      end
 
       relationship = relationship_type.to_s.downcase.tr("_", " ")
       target_name = target[:label] == "Allegation" ? "the allegation of #{target[:name]}" : target[:name]
