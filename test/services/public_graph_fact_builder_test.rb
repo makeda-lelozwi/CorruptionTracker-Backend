@@ -60,6 +60,19 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
     assert_equal "Events and causality", fact[:lane]
   end
 
+  test "writes an event received by a person as a natural sentence" do
+    fact = build_result(
+      source_label: "Event",
+      relationship_type: "RECEIVED_COMPLAINT",
+      target_label: "Person",
+      source_name: "City of Johannesburg urgent request to Minister of Police",
+      target_name: "Senzo Mchunu"
+    ).facts.first
+
+    assert_equal "City of Johannesburg urgent request to Minister of Police received by Senzo Mchunu.", fact[:sentence]
+    assert_equal "Allegations and complaints", fact[:lane]
+  end
+
   test "identifies an allegation target in fallback wording" do
     fact = build_result(
       source_label: "Event",
@@ -71,6 +84,18 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
 
     assert_equal "University of Fort Hare murders investigation contradicts the allegation of PKTT no longer required or adding value.", fact[:sentence]
     assert_equal "Evidence", fact[:lane]
+  end
+
+  test "does not inject the word event into testimony wording" do
+    fact = build_result(
+      source_label: "Testimony",
+      relationship_type: "DISCUSSES",
+      target_label: "Event",
+      source_name: "Day 9 - Continued testimony of Lt Gen Dumisani Khumalo",
+      target_name: "SAPS terminated the Medicare24 health-risk services contract"
+    ).facts.first
+
+    assert_equal "Day 9 - Continued testimony of Lt Gen Dumisani Khumalo discusses “SAPS terminated the Medicare24 health-risk services contract”.", fact[:sentence]
   end
 
   test "keeps only approved relationship metadata and nearby citation fields" do

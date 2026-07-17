@@ -147,7 +147,7 @@ sentence easier to read. The graph direction itself is never changed.
 | 6 | Evidence → SUPPORTS → Allegation | 4 | Evidence | Forward | Source is recorded as supporting the allegation “Target”. | reason |
 | 7 | Person → SUBJECT_OF → Allegation | 4 | Allegations and complaints | Forward | Source is recorded as the subject of the allegation “Target”. | page, quote |
 | 8 | Person → USED_INTERMEDIARY → Person | 4 | Other connections | Forward | Source is recorded as having used Target as an intermediary. | reason |
-| 9 | Testimony → DISCUSSES → Event | 4 | Testimony and sources | Forward | Source discusses the event “Target”. | page, quote |
+| 9 | Testimony → DISCUSSES → Event | 4 | Testimony and sources | Forward | Source discusses “Target”. | page, quote |
 | 10 | Event → LED_TO → Event | 3 | Events and causality | Forward | The dataset records Source as leading to Target. | reason |
 | 11 | Organisation → INVESTIGATED → Event | 3 | Events and causality | Forward | Source is recorded as having investigated Target. | role |
 | 12 | Organisation → RECEIVED_COMPLAINT → Event | 3 | Allegations and complaints | Forward | Source is recorded as having received a complaint connected with Target. | status |

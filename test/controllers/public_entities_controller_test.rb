@@ -30,6 +30,8 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".entity-list--index li", count: 5
     assert_select ".pagination a", text: "2" do |links|
       assert_equal "/people?page=2", links.first["href"]
+      assert_equal "entity-results", links.first["data-turbo-frame"]
+      assert_equal "advance", links.first["data-turbo-action"]
     end
     assert_select "a[href='/people/person:person-6']", count: 0
 
