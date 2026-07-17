@@ -38,13 +38,13 @@
         <ul class="entity-list entity-list--index">
           <% @entities.each do |entity| %>
             <li>
-              <%= link_to entity.fetch("name"), entity.fetch("path") %>
+              <%= link_to entity.fetch("name"), entity.fetch("path"), data: { turbo_frame: "_top" } %>
               <% if entity["description"].present? %>
                 <p><%= truncate(entity["description"], length: 180) %></p>
               <% else %>
                 <p>Open this record to explore its documented connections.</p>
               <% end %>
-              <%= link_to "View relationships →", entity.fetch("path"), class: "entity-list__action", aria: { label: "View relationships for #{entity.fetch("name")}" } %>
+              <%= link_to "View relationships →", entity.fetch("path"), class: "entity-list__action", data: { turbo_frame: "_top" }, aria: { label: "View relationships for #{entity.fetch("name")}" } %>
             </li>
           <% end %>
         </ul>
@@ -57,7 +57,8 @@
               <% else %>
                 <%= link_to page_number,
                   public_send(@entry.index_route, q: @query.presence, page: page_number),
-                  aria: { label: "Page #{page_number}" } %>
+                  aria: { label: "Page #{page_number}" },
+                  data: { turbo_frame: "entity-results", turbo_action: "advance" } %>
               <% end %>
             <% end %>
           </nav>
