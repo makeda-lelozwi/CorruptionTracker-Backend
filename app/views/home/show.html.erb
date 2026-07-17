@@ -4,41 +4,81 @@
   <p class="notice notice--error home-notice">The evidence web is temporarily unavailable. Please try again later.</p>
 <% else %>
   <% if @latest_testimony %>
-    <section class="latest-testimony" aria-labelledby="latest-testimony-heading">
-      <h1 id="latest-testimony-heading">Latest testimony hearing</h1>
-      <div class="latest-testimony__details">
-        <p><%= testimony_heading(@latest_testimony) %></p>
-        <p><%= @latest_testimony["witness"] %></p>
-      </div>
-
-      <% if @latest_testimony["allegations"].any? %>
-        <div class="latest-testimony__topics">
-          <h2><%= @latest_testimony.fetch("title").to_s[/Day\s+\d+/i] || "This testimony" %> discusses:</h2>
-          <ul>
-            <% @latest_testimony["allegations"].each do |allegation| %>
-              <li>allegations of “<%= allegation.fetch("name") %>”</li>
-            <% end %>
-          </ul>
+    <div class="home-dashboard">
+      <section class="latest-testimony" aria-labelledby="latest-testimony-heading">
+        <p class="home-eyebrow">Latest from the evidence web</p>
+        <h1 id="latest-testimony-heading">Latest testimony hearing</h1>
+        <div class="latest-testimony__details">
+          <div>
+            <span>Hearing</span>
+            <p><%= testimony_heading(@latest_testimony) %></p>
+          </div>
+          <div>
+            <span>Witness</span>
+            <p><%= @latest_testimony["witness"] %></p>
+          </div>
         </div>
-      <% end %>
 
-      <%= link_to "read more >", @latest_testimony.fetch("path"), class: "latest-testimony__link" %>
-    </section>
+        <% if @latest_testimony["allegations"].any? %>
+          <div class="latest-testimony__topics">
+            <h2><%= @latest_testimony.fetch("title").to_s[/Day\s+\d+/i] || "This testimony" %> discusses</h2>
+            <ul>
+              <% @latest_testimony["allegations"].each do |allegation| %>
+                <li>allegations of “<%= allegation.fetch("name") %>”</li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= link_to "read more >", @latest_testimony.fetch("path"), class: "latest-testimony__link" %>
+      </section>
+
+      <aside class="home-overview" aria-labelledby="home-overview-heading">
+        <section class="dashboard-panel dashboard-panel--accent">
+          <p class="dashboard-panel__label">At a glance</p>
+          <h2 id="home-overview-heading">Public records</h2>
+          <strong class="dashboard-stat"><%= @sections.sum { |section| section[:count] } %></strong>
+          <p>records across <%= pluralize(@sections.count, "index") %></p>
+        </section>
+
+        <section class="dashboard-panel">
+          <p class="dashboard-panel__label">Start exploring</p>
+          <h2>Browse by type</h2>
+          <nav class="dashboard-links" aria-label="Evidence indexes">
+            <% @sections.each do |section| %>
+              <%= link_to PublicEntityCatalog.index_path(section[:entry].label) do %>
+                <span><%= section[:entry].plural %></span>
+                <span><%= section[:count] %></span>
+              <% end %>
+            <% end %>
+          </nav>
+        </section>
+      </aside>
+    </div>
   <% end %>
 
   <section class="home-index" id="index" aria-labelledby="index-heading">
-    <h2 id="index-heading">Index</h2>
-
-    <% if @query.present? %>
-      <p class="home-index__summary">Results matching “<%= @query %>”.</p>
-    <% end %>
+    <div class="home-index__heading">
+      <div>
+        <p class="home-eyebrow">Explore the network</p>
+        <h2 id="index-heading">Evidence index</h2>
+      </div>
+      <% if @query.present? %>
+        <p class="home-index__summary">Results matching “<%= @query %>”.</p>
+      <% else %>
+        <p class="home-index__summary">Choose a record to follow its documented relationships.</p>
+      <% end %>
+    </div>
 
     <div class="home-index__grid">
       <% @sections.each do |section| %>
         <section class="home-index__section" aria-labelledby="<%= section[:entry].label.parameterize %>-heading">
-          <h3 id="<%= section[:entry].label.parameterize %>-heading">
-            <%= link_to section[:entry].plural, PublicEntityCatalog.index_path(section[:entry].label) %>
-          </h3>
+          <div class="home-index__section-heading">
+            <h3 id="<%= section[:entry].label.parameterize %>-heading">
+              <%= link_to section[:entry].plural, PublicEntityCatalog.index_path(section[:entry].label) %>
+            </h3>
+            <span><%= section[:count] %></span>
+          </div>
 
           <% if section[:entities].any? %>
             <ul>
@@ -63,6 +103,8 @@
           <% else %>
             <p class="home-index__empty">No <%= section[:entry].plural.downcase %><%= " matched this search" if @query.present? %>.</p>
           <% end %>
+
+          <%= link_to "Browse all →", PublicEntityCatalog.index_path(section[:entry].label), class: "home-index__browse" %>
         </section>
       <% end %>
     </div>

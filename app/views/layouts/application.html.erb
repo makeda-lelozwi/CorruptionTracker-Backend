@@ -24,16 +24,64 @@
   </head>
 
   <body class="<%= "home-page" if controller_name == "home" %>">
-    <header class="site-header">
+    <header class="site-header" data-controller="spotlight-search" data-action="keydown.esc@window->spotlight-search#close">
       <div class="site-header__inner">
         <%= link_to "Corruption Tracker", root_path, class: "site-header__brand" %>
+        <a
+          href="#spotlight-search-modal"
+          class="site-search-toggle"
+          aria-label="Open search"
+          aria-haspopup="dialog"
+          aria-controls="spotlight-search-modal"
+          data-action="spotlight-search#open"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4 4"></path>
+          </svg>
+        </a>
         <%= form_with url: root_path, method: :get, class: "site-search" do |form| %>
           <%= form.search_field :q, value: params[:q], placeholder: "Search", aria: { label: "Search the corruption tracker" } %>
         <% end %>
         <nav class="site-nav" aria-label="Main navigation">
-          <%= link_to "home", root_path %>
-          <span>about</span>
+          <%= link_to "Home", root_path %>
+          <span>About</span>
         </nav>
+      </div>
+
+      <nav class="mobile-nav" aria-label="Mobile navigation">
+        <%= link_to "Home", root_path %>
+        <span>About</span>
+      </nav>
+
+      <div
+        id="spotlight-search-modal"
+        class="spotlight-search"
+        role="dialog"
+        aria-labelledby="spotlight-search-heading"
+        data-spotlight-search-target="dialog"
+        data-action="click->spotlight-search#closeOnBackdrop"
+      >
+        <div class="spotlight-search__panel">
+          <div class="spotlight-search__heading">
+            <div>
+              <p class="dashboard-panel__label">Search the network</p>
+              <h2 id="spotlight-search-heading">Find a public record</h2>
+            </div>
+            <a href="#" class="spotlight-search__close" aria-label="Close search" data-action="spotlight-search#close">×</a>
+          </div>
+
+          <%= form_with url: root_path, method: :get, class: "spotlight-search__form" do |form| %>
+            <%= form.label :q, "Search people, organisations, events and allegations", class: "visually-hidden" %>
+            <%= form.search_field :q,
+              value: params[:q],
+              placeholder: "Type a name, event or allegation…",
+              autocomplete: "off",
+              data: { spotlight_search_target: "input" } %>
+            <%= form.submit "Search" %>
+          <% end %>
+          <p class="spotlight-search__hint">Search across the public evidence index.</p>
+        </div>
       </div>
     </header>
     <main class="site-main">

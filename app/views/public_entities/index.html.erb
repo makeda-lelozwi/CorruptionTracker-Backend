@@ -6,33 +6,65 @@
   <span><%= @entry.plural %></span>
 </nav>
 
-<header class="page-header page-header--compact">
-  <p class="eyebrow"><%= @entry.singular %> index</p>
-  <h1><%= @entry.plural %></h1>
-  <p class="page-introduction">Browse the <%= @entry.plural.downcase %> available in the public graph.</p>
-</header>
+<div class="index-dashboard">
+  <div class="index-dashboard__main">
+    <header class="page-header page-header--compact">
+      <p class="eyebrow"><%= @entry.singular %> index</p>
+      <h1><%= @entry.plural %></h1>
+      <p class="page-introduction">Browse the <%= @entry.plural.downcase %> available in the public graph and follow a record to see its relationships.</p>
+    </header>
 
-<%= form_with url: PublicEntityCatalog.index_path(@entry.label), method: :get, class: "search-form" do |form| %>
-  <%= form.label :q, "Search #{@entry.plural.downcase}" %>
-  <div class="search-form__controls">
-    <%= form.search_field :q, value: @query, placeholder: "Search a name, title or ID" %>
-    <%= form.submit "Search" %>
-  </div>
-<% end %>
-
-<p class="search-summary"><%= pluralize(@entities.length, @entry.singular.downcase) %><%= " matched “#{@query}”" if @query.present? %>.</p>
-
-<% if @entities.any? %>
-  <ul class="entity-list entity-list--index">
-    <% @entities.each do |entity| %>
-      <li>
-        <%= link_to entity.fetch("name"), entity.fetch("path") %>
-        <% if entity["description"].present? %>
-          <p><%= truncate(entity["description"], length: 180) %></p>
-        <% end %>
-      </li>
+    <%= form_with url: PublicEntityCatalog.index_path(@entry.label), method: :get, class: "search-form" do |form| %>
+      <%= form.label :q, "Search #{@entry.plural.downcase}" %>
+      <div class="search-form__controls">
+        <%= form.search_field :q, value: @query, placeholder: "Search a name, title or ID" %>
+        <%= form.submit "Search" %>
+      </div>
     <% end %>
-  </ul>
-<% else %>
-  <p class="empty-state">No <%= @entry.plural.downcase %> matched this search.</p>
-<% end %>
+
+    <div class="results-heading">
+      <h2>Available records</h2>
+      <p class="search-summary"><%= pluralize(@entities.length, @entry.singular.downcase) %><%= " matched “#{@query}”" if @query.present? %></p>
+    </div>
+
+    <% if @entities.any? %>
+      <ul class="entity-list entity-list--index">
+        <% @entities.each do |entity| %>
+          <li>
+            <%= link_to entity.fetch("name"), entity.fetch("path") %>
+            <% if entity["description"].present? %>
+              <p><%= truncate(entity["description"], length: 180) %></p>
+            <% else %>
+              <p>Open this record to explore its documented connections.</p>
+            <% end %>
+            <%= link_to "View relationships →", entity.fetch("path"), class: "entity-list__action", aria: { label: "View relationships for #{entity.fetch("name")}" } %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-state">No <%= @entry.plural.downcase %> matched this search.</p>
+    <% end %>
+  </div>
+
+  <aside class="dashboard-sidebar" aria-labelledby="index-overview-heading">
+    <section class="dashboard-panel dashboard-panel--accent">
+      <p class="dashboard-panel__label">At a glance</p>
+      <h2 id="index-overview-heading"><%= @entry.plural %></h2>
+      <strong class="dashboard-stat"><%= @entities.length %></strong>
+      <p><%= @query.present? ? "records match this search" : "records ready to explore" %></p>
+    </section>
+
+    <section class="dashboard-panel">
+      <p class="dashboard-panel__label">Explore the web</p>
+      <h2>Other indexes</h2>
+      <nav class="dashboard-links" aria-label="Other evidence indexes">
+        <% PublicEntityCatalog::ENTRIES.reject { |entry| entry.label == @entry.label }.each do |entry| %>
+          <%= link_to PublicEntityCatalog.index_path(entry.label) do %>
+            <span><%= entry.plural %></span>
+            <span aria-hidden="true">→</span>
+          <% end %>
+        <% end %>
+      </nav>
+    </section>
+  </aside>
+</div>
