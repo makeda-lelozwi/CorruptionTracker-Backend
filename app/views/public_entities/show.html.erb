@@ -22,97 +22,22 @@
     <% end %>
   </header>
 
-  <div class="entity-dashboard__layout">
-    <section class="facts" aria-labelledby="recorded-relationships">
-      <h2 id="recorded-relationships">Recorded relationships</h2>
-      <p class="section-introduction">These statements describe connections in the dataset. Quotes and page references are shown beside the statements they support.</p>
+  <section class="facts facts--connections" aria-labelledby="discussed-connections">
+    <h2 id="discussed-connections"><%= @entry.label == "Testimony" ? "Discussed in this testimony" : "Related to" %></h2>
 
-      <% if @facts_by_lane.any? %>
-        <% PublicGraphFactBuilder::LANE_ORDER.each do |lane| %>
-          <% facts = @facts_by_lane[lane] %>
-          <% next if facts.blank? %>
-
-          <section class="fact-lane" aria-labelledby="<%= lane.parameterize %>-heading">
-            <div class="fact-lane__heading">
-              <h3 id="<%= lane.parameterize %>-heading"><%= lane %></h3>
-              <span><%= facts.length %></span>
-            </div>
-            <div class="fact-list">
-              <%= render partial: "fact", collection: facts.first(3), as: :fact %>
-            </div>
-
-            <% if facts.length > 3 %>
-              <details class="fact-lane__more">
-                <summary>Show <%= facts.length - 3 %> more</summary>
-                <div class="fact-list">
-                  <%= render partial: "fact", collection: facts.drop(3), as: :fact %>
-                </div>
-              </details>
-            <% end %>
-          </section>
+    <% if related_entities.any? %>
+      <ul class="connected-records connected-records--primary">
+        <% related_entities.each do |entity| %>
+          <li>
+            <span><%= entity[:label] %></span>
+            <%= link_to entity[:name], entity[:path] %>
+          </li>
         <% end %>
-      <% else %>
-        <p class="empty-state">No public relationships are currently listed for this <%= @entry.singular.downcase %>.</p>
-      <% end %>
-    </section>
-
-    <aside class="dashboard-sidebar relationship-overview" aria-labelledby="relationship-overview-heading">
-      <section class="dashboard-panel dashboard-panel--accent">
-        <p class="dashboard-panel__label">At a glance</p>
-        <h2 id="relationship-overview-heading">Relationship overview</h2>
-        <div class="dashboard-stat-grid">
-          <div>
-            <strong><%= all_facts.length %></strong>
-            <span>connections</span>
-          </div>
-          <div>
-            <strong><%= related_entities.length %></strong>
-            <span>related records</span>
-          </div>
-          <div>
-            <strong><%= @facts_by_lane.length %></strong>
-            <span>categories</span>
-          </div>
-          <div>
-            <strong><%= all_facts.count { |fact| fact[:quote].present? || fact[:page].present? } %></strong>
-            <span>citations</span>
-          </div>
-        </div>
-      </section>
-
-      <% if @facts_by_lane.any? %>
-        <section class="dashboard-panel">
-          <p class="dashboard-panel__label">Jump to</p>
-          <h2>Connection types</h2>
-          <nav class="dashboard-links" aria-label="Relationship categories">
-            <% PublicGraphFactBuilder::LANE_ORDER.each do |lane| %>
-              <% facts = @facts_by_lane[lane] %>
-              <% next if facts.blank? %>
-              <a href="#<%= lane.parameterize %>-heading">
-                <span><%= lane %></span>
-                <span><%= facts.length %></span>
-              </a>
-            <% end %>
-          </nav>
-        </section>
-      <% end %>
-
-      <% if related_entities.any? %>
-        <section class="dashboard-panel">
-          <p class="dashboard-panel__label">Go deeper</p>
-          <h2>Connected records</h2>
-          <ul class="connected-records">
-            <% related_entities.first(6).each do |entity| %>
-              <li>
-                <span><%= entity[:label] %></span>
-                <%= link_to entity[:name], entity[:path] %>
-              </li>
-            <% end %>
-          </ul>
-        </section>
-      <% end %>
-    </aside>
-  </div>
+      </ul>
+    <% else %>
+      <p class="empty-state">No public relationships are currently listed for this <%= @entry.singular.downcase %>.</p>
+    <% end %>
+  </section>
 
   <% if @graph[:elements][:edges].any? %>
     <section

@@ -15,7 +15,32 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/people/person:alice']", "Alice"
   end
 
-  test "renders a fact with escaped citation and metadata" do
+  test "paginates entity indexes in groups of five" do
+    rows = 6.times.map do |index|
+      {
+        "externalId" => "person:person-#{index + 1}",
+        "name" => "Person #{index + 1}"
+      }
+    end
+    client = fake_client(rows)
+
+    with_neo4j_client(client) { get people_url }
+
+    assert_response :success
+    assert_select ".entity-list--index li", count: 5
+    assert_select ".pagination a", text: "2" do |links|
+      assert_equal "/people?page=2", links.first["href"]
+    end
+    assert_select "a[href='/people/person:person-6']", count: 0
+
+    with_neo4j_client(client) { get people_url(page: 2) }
+
+    assert_response :success
+    assert_select ".entity-list--index li", count: 1
+    assert_select "a[href='/people/person:person-6']", "Person 6"
+  end
+
+  test "renders connected public entities" do
     client = fake_client(show_rows(quote: "<script>alert('x')</script>"))
 
     with_neo4j_client(client) do
@@ -23,10 +48,9 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select ".fact-card__sentence", /Alice is recorded as working for Example Organisation/
-    assert_select ".citation", text: /<script>alert\('x'\)<\/script>/
+    assert_select "h2", "Related to"
+    assert_select ".connected-records--primary a[href='/organisations/org:example']", "Example Organisation"
     assert_not_includes response.body, "<script>alert('x')</script>"
-    assert_select ".fact-metadata dt", "Position"
     assert_select "[data-controller='public-graph']"
   end
 
@@ -72,6 +96,7 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Day 3 Testimony"
+    assert_select "h2", "Discussed in this testimony"
   end
 
   test "returns a safe error page for a Neo4j failure" do

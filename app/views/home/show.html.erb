@@ -6,18 +6,17 @@
   <% if @latest_testimony %>
     <div class="home-dashboard">
       <section class="latest-testimony" aria-labelledby="latest-testimony-heading">
-        <p class="home-eyebrow">Latest from the evidence web</p>
         <h1 id="latest-testimony-heading">Latest testimony hearing</h1>
-        <div class="latest-testimony__details">
+        <dl class="latest-testimony__details">
           <div>
-            <span>Hearing</span>
-            <p><%= testimony_heading(@latest_testimony) %></p>
+            <dt>Hearing</dt>
+            <dd><%= testimony_heading(@latest_testimony) %></dd>
           </div>
           <div>
-            <span>Witness</span>
-            <p><%= @latest_testimony["witness"] %></p>
+            <dt>Witness</dt>
+            <dd><%= @latest_testimony["witness"] %></dd>
           </div>
-        </div>
+        </dl>
 
         <% if @latest_testimony["allegations"].any? %>
           <div class="latest-testimony__topics">

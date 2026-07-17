@@ -646,6 +646,10 @@ body:not(.home-page) .supporting-graph__heading p {
   min-width: 0;
 }
 
+.index-dashboard.index-dashboard--index-page {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .index-dashboard .page-header {
   margin-bottom: 2.9rem;
 }
@@ -730,9 +734,56 @@ body:not(.home-page) .entity-list--index .entity-list__action {
   text-decoration: none;
 }
 
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 2.3rem;
+}
+
+.pagination a,
+.pagination span {
+  display: grid;
+  min-width: 2.9rem;
+  height: 2.9rem;
+  padding: 0 0.6rem;
+  border: 0.1rem solid rgb(247 247 248 / 14%);
+  border-radius: 0.6rem;
+  color: #f7f7f8;
+  background: rgb(14 27 39 / 82%);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  place-items: center;
+}
+
+.pagination span[aria-current="page"] {
+  border-color: #a8d5bd;
+  color: #07130f;
+  background: #a8d5bd;
+}
+
+turbo-frame#entity-results {
+  display: block;
+  transition: opacity 140ms ease;
+}
+
+turbo-frame#entity-results[busy] {
+  opacity: 0.55;
+}
+
 .dashboard-sidebar {
   display: grid;
   gap: 1.1rem;
+}
+
+.index-explore {
+  margin-top: 4.6rem;
+}
+
+.index-explore .dashboard-links {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 2.3rem;
 }
 
 .relationship-overview {
@@ -855,6 +906,33 @@ body:not(.home-page) .entity-list--index .entity-list__action {
   color: #f7f7f8;
   font-size: 0.9rem;
   line-height: 1.25;
+}
+
+body:not(.home-page) .facts--connections {
+  max-width: 68rem;
+}
+
+.connected-records--primary {
+  gap: 2.3rem;
+  max-width: 55rem;
+  margin-top: 2.3rem;
+}
+
+.connected-records--primary li {
+  gap: 0.4rem;
+}
+
+.connected-records--primary span {
+  color: #e6a86f;
+  font-size: 0.8rem;
+}
+
+.connected-records--primary a {
+  width: fit-content;
+  color: #a8d5bd;
+  font-size: 1.4rem;
+  line-height: 1.3;
+  text-underline-offset: 0.4rem;
 }
 
 .entity-dashboard > .page-header {
@@ -1037,6 +1115,10 @@ body:not(.home-page) .error-layout h1 {
     grid-template-columns: 1fr;
   }
 
+  .index-explore .dashboard-links {
+    grid-template-columns: 1fr;
+  }
+
   .relationship-overview .dashboard-panel--accent {
     grid-column: auto;
   }
@@ -1139,14 +1221,6 @@ body:not(.home-page) .error-layout h1 {
   min-height: 34.2rem;
   padding: 0 2rem 2.3rem;
   border-bottom: 0.1rem solid rgb(247 247 248 / 80%);
-}
-
-.latest-testimony h1 {
-  max-width: none;
-  margin-bottom: 1.1rem;
-  font-size: 2rem;
-  line-height: 1.2;
-  text-transform: uppercase;
 }
 
 .latest-testimony__details {
@@ -1432,7 +1506,8 @@ body:not(.home-page) .error-layout h1 {
 
 .latest-testimony h1 {
   max-width: 13ch;
-  margin-bottom: 2.9rem;
+  margin-bottom: 2.3rem;
+  color: #f7f7f8;
   font-size: clamp(2.9rem, 5vw, 4.6rem);
   letter-spacing: -0.04em;
   line-height: 1;
@@ -1442,21 +1517,16 @@ body:not(.home-page) .error-layout h1 {
 .latest-testimony__details {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.1rem;
-  overflow: hidden;
-  border: 0.1rem solid rgb(247 247 248 / 13%);
-  border-radius: 0.6rem;
-  background: rgb(247 247 248 / 13%);
+  gap: 2.3rem;
+  margin: 0;
   font-size: 1rem;
 }
 
 .latest-testimony__details > div {
   min-width: 0;
-  padding: 1.4rem;
-  background: rgb(7 17 28 / 72%);
 }
 
-.latest-testimony__details span {
+.latest-testimony__details dt {
   display: block;
   margin-bottom: 0.6rem;
   color: #e6a86f;
@@ -1466,8 +1536,10 @@ body:not(.home-page) .error-layout h1 {
   text-transform: uppercase;
 }
 
-.latest-testimony__details p {
+.latest-testimony__details dd {
+  margin: 0;
   color: rgb(247 247 248 / 82%);
+  font-size: 1.1rem;
   line-height: 1.35;
 }
 
@@ -1698,7 +1770,7 @@ body:not(.home-page) .error-layout h1 {
   }
 
   .latest-testimony h1 {
-    margin-bottom: 2.3rem;
+    margin-bottom: 1.7rem;
     font-size: 2.9rem;
   }
 

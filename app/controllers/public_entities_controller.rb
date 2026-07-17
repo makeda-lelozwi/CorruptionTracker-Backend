@@ -1,13 +1,18 @@
 class PublicEntitiesController < ApplicationController
   EXTERNAL_ID_PATTERN = /\A[a-z][a-z0-9_-]*:[a-zA-Z0-9._:-]+\z/
+  INDEX_PAGE_SIZE = 5
 
   before_action :set_entry
 
   def index
     @query = params[:q].to_s.strip
-    @entities = repository.all(label: @entry.label, query: @query).map do |entity|
+    entities = repository.all(label: @entry.label, query: @query).map do |entity|
       entity.merge("path" => PublicEntityCatalog.member_path(@entry.label, entity.fetch("externalId")))
     end
+    @total_entities = entities.length
+    @total_pages = (@total_entities.to_f / INDEX_PAGE_SIZE).ceil
+    @page = params[:page].to_i.clamp(1, [ @total_pages, 1 ].max)
+    @entities = entities.slice((@page - 1) * INDEX_PAGE_SIZE, INDEX_PAGE_SIZE) || []
   rescue Neo4j::Client::Error => error
     render_neo4j_error(error)
   end
