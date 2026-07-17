@@ -32,9 +32,19 @@
     <% if related_entities.any? %>
       <ul class="connected-records connected-records--primary">
         <% related_entities.each do |entity| %>
+          <% relationship_facts = all_facts.select do |fact|
+            [fact[:source][:id], fact[:target][:id]].include?(entity[:id])
+          end %>
           <li>
             <span><%= entity[:label] %></span>
             <%= link_to entity[:name], entity[:path] %>
+            <div class="connected-records__insights">
+              <% relationship_facts.each do |fact| %>
+                <p class="connected-records__relationship">
+                  <%= fact[:sentence] %><%= " #{fact[:description]}" if fact[:description].present? %>
+                </p>
+              <% end %>
+            </div>
           </li>
         <% end %>
       </ul>

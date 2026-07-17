@@ -18,7 +18,7 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
     ).facts.first
 
     assert_equal "The dataset records A briefing as leading to the allegation “An allegation”.", allegation[:sentence]
-    assert_equal "The dataset records A briefing as leading to An investigation.", event[:sentence]
+    assert_equal "A briefing led to An investigation.", event[:sentence]
   end
 
   test "reverses a pattern for natural public wording" do
@@ -34,17 +34,43 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
     assert_equal :reverse, fact[:direction]
   end
 
-  test "uses a cautious fallback for an unknown exact pattern" do
+  test "uses the relationship type as the fallback verb phrase" do
     fact = build_result(
       source_label: "Person",
-      relationship_type: "UNMAPPED_LINK",
-      target_label: "Event",
+      relationship_type: "CONTACTED",
+      target_label: "Person",
       source_name: "A person",
-      target_name: "An event"
+      target_name: "Another person"
     ).facts.first
 
-    assert_equal "A person is connected to An event through UNMAPPED_LINK.", fact[:sentence]
+    assert_equal "A person contacted Another person.", fact[:sentence]
     assert_equal "Other connections", fact[:lane]
+  end
+
+  test "writes a raised event relationship as a natural sentence" do
+    fact = build_result(
+      source_label: "Person",
+      relationship_type: "RAISED",
+      target_label: "Event",
+      source_name: "Fannie Masemola",
+      target_name: "University of Fort Hare murders investigation"
+    ).facts.first
+
+    assert_equal "Fannie Masemola raised the University of Fort Hare murders investigation.", fact[:sentence]
+    assert_equal "Events and causality", fact[:lane]
+  end
+
+  test "identifies an allegation target in fallback wording" do
+    fact = build_result(
+      source_label: "Event",
+      relationship_type: "CONTRADICTS",
+      target_label: "Allegation",
+      source_name: "University of Fort Hare murders investigation",
+      target_name: "PKTT no longer required or adding value."
+    ).facts.first
+
+    assert_equal "University of Fort Hare murders investigation contradicts the allegation of PKTT no longer required or adding value.", fact[:sentence]
+    assert_equal "Evidence", fact[:lane]
   end
 
   test "keeps only approved relationship metadata and nearby citation fields" do
@@ -66,6 +92,17 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
     assert_equal({ "role" => "subject", "reason" => "Recorded reason" }, fact[:metadata])
     refute_includes fact[:metadata].keys, "privateField"
     assert_equal "Allegations and complaints", fact[:lane]
+  end
+
+  test "humanizes a relationship description" do
+    fact = build_result(
+      source_label: "Event",
+      relationship_type: "LED_TO",
+      target_label: "Event",
+      properties: { "description" => "  complaint prompted the investigation  " }
+    ).facts.first
+
+    assert_equal "Complaint prompted the investigation.", fact[:description]
   end
 
   test "limits the supporting graph to 25 public nodes" do

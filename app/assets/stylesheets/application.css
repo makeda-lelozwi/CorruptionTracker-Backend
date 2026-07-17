@@ -935,6 +935,20 @@ body:not(.home-page) .facts--connections {
   text-underline-offset: 0.4rem;
 }
 
+.connected-records__insights {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 70ch;
+  margin-top: 0.4rem;
+}
+
+.connected-records__relationship {
+  margin: 0;
+  color: rgb(247 247 248 / 72%);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .entity-dashboard > .page-header {
   margin-bottom: 4.6rem;
 }
