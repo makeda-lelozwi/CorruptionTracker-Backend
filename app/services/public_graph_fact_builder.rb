@@ -35,6 +35,7 @@ class PublicGraphFactBuilder
     "HOLDS_POSITION" => "Roles and affiliations",
     "ASSOCIATE_OF" => "Roles and affiliations",
     "ASSOCIATED_WITH" => "Roles and affiliations",
+    "RELATIVE" => "Roles and affiliations",
     "ALLEGED_MEMBER_OF" => "Roles and affiliations",
     "EXECUTIVE_OVERSIGHT_OF" => "Roles and affiliations",
     "LED_TO" => "Events and causality",

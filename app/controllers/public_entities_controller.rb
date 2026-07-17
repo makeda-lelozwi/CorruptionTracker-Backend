@@ -28,6 +28,10 @@ class PublicEntitiesController < ApplicationController
 
     @entity = result.entity
     @facts_by_lane = result.lanes
+    @person_profile_insights = PublicPersonProfileBuilder.new(
+      person: result.entity,
+      facts: result.facts
+    ).call if @entry.label == "Person"
     @graph = PublicEntityGraph.new(entity: result.entity, facts: result.facts).call
   rescue Neo4j::Client::Error => error
     render_neo4j_error(error)

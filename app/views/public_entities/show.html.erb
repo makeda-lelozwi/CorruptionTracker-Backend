@@ -19,10 +19,15 @@
   <header class="page-header page-header--compact">
     <p class="eyebrow"><%= @entry.singular %></p>
     <h1><%= @entity[:name] %></h1>
+    <% if @person_profile_insights.present? %>
+      <ul class="person-profile" aria-label="Roles and affiliations">
+        <% @person_profile_insights.each do |insight| %>
+          <li><%= insight %></li>
+        <% end %>
+      </ul>
+    <% end %>
     <% if @entity[:description].present? %>
       <p class="page-introduction"><%= @entity[:description] %></p>
-    <% else %>
-      <p class="page-introduction">This page brings together the public relationships currently recorded for <%= @entity[:name] %>.</p>
     <% end %>
   </header>
 

@@ -51,6 +51,7 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", "Related to"
     assert_select ".connected-records--primary a[href='/organisations/org:example']", "Example Organisation"
     assert_select ".connected-records__relationship", text: "Alice is recorded as working for Example Organisation. Their work overlapped during the inquiry."
+    assert_select ".person-profile li", text: "Alice works for Example Organisation as Director."
     assert_not_includes response.body, "<script>alert('x')</script>"
     assert_select "[data-controller='public-graph']"
   end

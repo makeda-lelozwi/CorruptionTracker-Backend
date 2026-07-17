@@ -953,6 +953,24 @@ body:not(.home-page) .facts--connections {
   margin-bottom: 4.6rem;
 }
 
+.person-profile {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 70ch;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  color: rgb(247 247 248 / 78%);
+  font-size: 1rem;
+  line-height: 1.5;
+  list-style: none;
+}
+
+.person-profile li::before {
+  margin-right: 0.6rem;
+  color: #e6a86f;
+  content: "→";
+}
+
 body:not(.home-page) .facts {
   max-width: none;
   margin-top: 0;
