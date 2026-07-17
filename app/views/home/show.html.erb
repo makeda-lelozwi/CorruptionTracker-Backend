@@ -3,6 +3,23 @@
 <% if @load_error %>
   <p class="notice notice--error home-notice">The evidence web is temporarily unavailable. Please try again later.</p>
 <% else %>
+  <% if @testimonies.any? %>
+    <% featured_testimony = @latest_testimony || @testimonies.last %>
+    <nav class="testimony-timeline" aria-labelledby="testimony-timeline-heading">
+      <h2 id="testimony-timeline-heading">Testimony timeline</h2>
+      <ol>
+        <% @testimonies.each do |testimony| %>
+          <li>
+            <%= link_to testimony.fetch("path"), class: ("is-current" if testimony["externalId"] == featured_testimony["externalId"]), aria: ({ current: "page" } if testimony["externalId"] == featured_testimony["externalId"]) do %>
+              <strong><%= testimony_day(testimony) %></strong>
+              <span><%= testimony_short_date(testimony) %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ol>
+    </nav>
+  <% end %>
+
   <% if @latest_testimony %>
     <div class="home-dashboard">
       <section class="latest-testimony" aria-labelledby="latest-testimony-heading">
@@ -36,15 +53,15 @@
         <section class="dashboard-panel dashboard-panel--accent">
           <p class="dashboard-panel__label">At a glance</p>
           <h2 id="home-overview-heading">Public records</h2>
-          <strong class="dashboard-stat"><%= @sections.sum { |section| section[:count] } %></strong>
-          <p>records across <%= pluralize(@sections.count, "index") %></p>
+          <strong class="dashboard-stat"><%= @overview_sections.sum { |section| section[:count] } %></strong>
+          <p>records across <%= pluralize(@overview_sections.count, "index") %></p>
         </section>
 
         <section class="dashboard-panel">
           <p class="dashboard-panel__label">Start exploring</p>
           <h2>Browse by type</h2>
           <nav class="dashboard-links" aria-label="Evidence indexes">
-            <% @sections.each do |section| %>
+            <% @overview_sections.each do |section| %>
               <%= link_to PublicEntityCatalog.index_path(section[:entry].label) do %>
                 <span><%= section[:entry].plural %></span>
                 <span><%= section[:count] %></span>

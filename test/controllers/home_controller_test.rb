@@ -29,8 +29,16 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Latest testimony hearing"
     assert_select "a[href='/testimonies/testimony:madlanga:2025-09-18']", "read more >"
+    assert_select ".testimony-timeline a[href='/testimonies/testimony:madlanga:2025-09-18']", /Day 2/
     assert_select "a[href='/people/person:alice']", "Alice"
     assert_select ".home-index__section", count: 4
+
+    with_neo4j_client(client) do
+      get root_url(q: "day 2")
+    end
+
+    assert_select ".dashboard-stat", "1"
+    assert_select ".home-overview .dashboard-links a[href='/people']", /People\s*1/
   end
 
   test "shows a safe error when Neo4j is unavailable" do
