@@ -65,6 +65,29 @@ class PublicEntityRepository
       head([label IN $public_labels WHERE label IN labels(target)]) AS targetLabel
   CYPHER
 
+  EVENT_TRAIL_QUERY = <<~CYPHER.squish
+    MATCH (focus:Event {externalId: $external_id})
+    OPTIONAL MATCH backward = (ancestor:Event)-[:LED_TO*1..10]->(focus)
+    WITH focus, backward
+    ORDER BY length(backward) DESC
+    WITH focus, head(collect(backward)) AS backward
+    WITH focus,
+      CASE WHEN backward IS NULL THEN [focus] ELSE nodes(backward) END AS history
+    OPTIONAL MATCH forward = (focus)-[:LED_TO*1..2]->(later:Event)
+    WITH focus, history, later, forward
+    ORDER BY length(forward), toLower(coalesce(later.title, later.name, later.externalId))
+    RETURN
+      [node IN history | {
+        externalId: node.externalId,
+        name: coalesce(node.title, node.name, node.externalId)
+      }] AS history,
+      collect(DISTINCT CASE WHEN later IS NULL THEN null ELSE {
+        externalId: later.externalId,
+        name: coalesce(later.title, later.name, later.externalId),
+        depth: length(forward)
+      } END) AS future
+  CYPHER
+
   def initialize(client: Neo4j::Client.new)
     @client = client
   end
@@ -92,6 +115,13 @@ class PublicEntityRepository
         external_id: external_id,
         public_labels: PublicEntityCatalog::LABELS
       }
+    )
+  end
+
+  def event_trail(external_id:)
+    client.query(
+      EVENT_TRAIL_QUERY,
+      parameters: { external_id: external_id }
     )
   end
 

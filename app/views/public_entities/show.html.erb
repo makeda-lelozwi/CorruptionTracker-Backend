@@ -31,6 +31,29 @@
     <% end %>
   </header>
 
+  <% if @event_trail.present? %>
+    <section class="causal-trail" aria-labelledby="causal-trail-heading">
+      <div class="causal-trail__heading">
+        <p class="dashboard-panel__label">Events and causality</p>
+        
+        <p>Follow the recorded chain back to its earliest linked event and up to two steps forward.</p>
+      </div>
+
+      <ol class="causal-trail__stages">
+        <% @event_trail.each do |stage| %>
+          <li class="causal-trail__stage<%= " causal-trail__stage--current" if stage.current %>">
+            <span class="causal-trail__label"><%= stage.label %></span>
+            <ul>
+              <% stage.events.each do |event| %>
+                <li><%= link_to event[:name], event[:path], aria: { current: stage.current ? "step" : nil } %></li>
+              <% end %>
+            </ul>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+  <% end %>
+
   <section class="facts facts--connections" aria-labelledby="discussed-connections">
     <h2 id="discussed-connections"><%= @entry.label == "Testimony" ? "Discussed in this testimony" : "Related to" %></h2>
 

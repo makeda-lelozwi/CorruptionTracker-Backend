@@ -28,6 +28,9 @@ class PublicEntitiesController < ApplicationController
 
     @entity = result.entity
     @facts_by_lane = result.lanes
+    @event_trail = PublicEventTrail.new(
+      repository.event_trail(external_id: external_id)
+    ).call if @entry.label == "Event"
     @person_profile_insights = PublicPersonProfileBuilder.new(
       person: result.entity,
       facts: result.facts

@@ -58,6 +58,43 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller='public-graph']"
   end
 
+  test "renders a causal trail on an event page" do
+    current = neo4j_node("Event", "event:current", "Current event", "current-node")
+    client = Object.new
+    client.define_singleton_method(:query) do |statement, parameters:|
+      if statement.include?("LED_TO*1..10")
+        [ {
+          "history" => [
+            { "externalId" => "event:spark", "name" => "Original complaint" },
+            { "externalId" => "event:current", "name" => "Current event" }
+          ],
+          "future" => [
+            { "externalId" => "event:next", "name" => "Next event", "depth" => 1 },
+            { "externalId" => "event:later", "name" => "Later event", "depth" => 2 }
+          ]
+        } ]
+      else
+        [ {
+          "subject" => current,
+          "relationship" => nil,
+          "relationshipType" => nil,
+          "source" => nil,
+          "target" => nil,
+          "sourceLabel" => nil,
+          "targetLabel" => nil
+        } ]
+      end
+    end
+
+    with_neo4j_client(client) { get event_url(external_id: "event:current") }
+
+    assert_response :success
+    assert_select "#causal-trail-heading", "Causal trail"
+    assert_select ".causal-trail__label", text: "Original spark"
+    assert_select ".causal-trail__stage--current a[aria-current='step']", "Current event"
+    assert_select ".causal-trail__stage a[href='/events/event:later']", "Later event"
+  end
+
   test "does not query Neo4j for an invalid external ID" do
     client = Object.new
     client.define_singleton_method(:query) { |_statement, parameters:| flunk "Neo4j should not be queried" }

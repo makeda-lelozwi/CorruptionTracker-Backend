@@ -953,6 +953,79 @@ body:not(.home-page) .facts--connections {
   margin-bottom: 4.6rem;
 }
 
+.causal-trail {
+  max-width: 68rem;
+  margin-bottom: 4.6rem;
+  padding: 1.7rem;
+  border: 0.1rem solid rgb(247 247 248 / 14%);
+  border-radius: 0.6rem;
+  background: rgb(9 18 31 / 58%);
+}
+
+.causal-trail__heading > p:last-child {
+  max-width: 65ch;
+  color: rgb(247 247 248 / 68%);
+}
+
+.causal-trail__stages,
+.causal-trail__stage ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.causal-trail__stages {
+  display: flex;
+  gap: 1.7rem;
+  margin-top: 1.7rem;
+  overflow-x: auto;
+}
+
+.causal-trail__stage {
+  position: relative;
+  flex: 1 0 12rem;
+  padding-top: 1.7rem;
+  border-top: 0.1rem solid rgb(168 213 189 / 46%);
+}
+
+.causal-trail__stage:not(:last-child)::after {
+  position: absolute;
+  top: -0.6rem;
+  right: -1.1rem;
+  color: #e6a86f;
+  content: "→";
+}
+
+.causal-trail__stage--current {
+  border-top-color: #e6a86f;
+}
+
+.causal-trail__label {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: #e6a86f;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.causal-trail__stage li + li {
+  margin-top: 0.6rem;
+}
+
+.causal-trail__stage a {
+  color: #a8d5bd;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.causal-trail__stage--current a {
+  color: #f7f7f8;
+  font-weight: 700;
+}
+
 .person-profile {
   display: grid;
   gap: 0.6rem;
