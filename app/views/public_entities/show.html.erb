@@ -9,7 +9,11 @@
 </nav>
 
 <% all_facts = @facts_by_lane.values.flatten %>
-<% related_entities = all_facts.flat_map { |fact| [fact[:source], fact[:target]] }.reject { |entity| entity[:id] == @entity[:id] }.uniq { |entity| entity[:id] } %>
+<% related_entities = all_facts
+  .flat_map { |fact| [fact[:source], fact[:target]] }
+  .reject { |entity| entity[:id] == @entity[:id] }
+  .uniq { |entity| entity[:id] }
+  .sort_by { |entity| [entity[:label].to_s, entity[:name].to_s.downcase] } %>
 
 <article class="entity-dashboard">
   <header class="page-header page-header--compact">
