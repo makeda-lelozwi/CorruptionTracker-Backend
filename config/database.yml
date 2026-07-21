@@ -85,4 +85,4 @@ test:
 #
 production:
   <<: *default
-  url: <%= ENV.fetch("URL_DATABASE") %>
+  url: <%= ENV["URL_DATABASE"] %>
