@@ -44,14 +44,14 @@
           <%= form.search_field :q, value: params[:q], placeholder: "Search", aria: { label: "Search the corruption tracker" } %>
         <% end %>
         <nav class="site-nav" aria-label="Main navigation">
-          <%= link_to "Home", root_path %>
-          <span>About</span>
+          <%= link_to "Home", root_path, aria: ({ current: "page" } if current_page?(root_path)) %>
+          <%= link_to "About", about_path, aria: ({ current: "page" } if current_page?(about_path)) %>
         </nav>
       </div>
 
       <nav class="mobile-nav" aria-label="Mobile navigation">
-        <%= link_to "Home", root_path %>
-        <span>About</span>
+        <%= link_to "Home", root_path, aria: ({ current: "page" } if current_page?(root_path)) %>
+        <%= link_to "About", about_path, aria: ({ current: "page" } if current_page?(about_path)) %>
       </nav>
 
       <div

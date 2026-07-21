@@ -1,6 +1,8 @@
 class HomeController < ApplicationController
   INDEX_LABELS = %w[Allegation Event Person Organisation].freeze
 
+  def about; end
+
   def show
     @query = params[:q].to_s.strip
     repository = PublicEntityRepository.new

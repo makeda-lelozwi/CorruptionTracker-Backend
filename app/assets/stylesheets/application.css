@@ -1578,6 +1578,11 @@ body:not(.home-page) .error-layout h1 {
   color: rgb(247 247 248 / 55%);
 }
 
+.home-page .site-nav a:not([aria-current="page"]),
+.home-page .mobile-nav a:not([aria-current="page"]) {
+  color: rgb(247 247 248 / 55%);
+}
+
 .home-page .site-main {
   width: min(calc(100% - 2.3rem), 78rem);
   margin: 0 auto;
@@ -1873,6 +1878,67 @@ body:not(.home-page) .error-layout h1 {
   margin: 5.7rem auto 0;
 }
 
+.about-page {
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+.about-page__header {
+  max-width: 58rem;
+  margin-bottom: 4.6rem;
+}
+
+.about-page__header h1 {
+  max-width: 14ch;
+  margin-bottom: 1.7rem;
+  font-size: clamp(3rem, 7vw, 5.7rem);
+  letter-spacing: -0.05em;
+}
+
+.about-page__introduction {
+  max-width: 52rem;
+  color: rgb(247 247 248 / 72%);
+  font-size: 1.3rem;
+}
+
+.about-page__content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.7rem;
+}
+
+.about-page__content section,
+.about-page__note {
+  padding: 2.3rem;
+  border: 0.1rem solid rgb(247 247 248 / 12%);
+  border-radius: 0.9rem;
+  background: rgb(14 27 39 / 82%);
+}
+
+.about-page__content h2 {
+  margin-bottom: 1.4rem;
+}
+
+.about-page__content p {
+  color: rgb(247 247 248 / 68%);
+}
+
+.about-page__content p:last-child {
+  margin-bottom: 0;
+}
+
+.about-page__note {
+  grid-column: 1 / -1;
+  border-color: rgb(168 213 189 / 25%);
+  background: linear-gradient(145deg, rgb(49 92 75 / 80%), rgb(20 49 46 / 76%));
+}
+
+.about-page__note > p:last-child {
+  max-width: 58rem;
+  color: rgb(247 247 248 / 88%);
+  font-size: 1.2rem;
+}
+
 @media (max-width: 68rem) {
   .home-dashboard {
     grid-template-columns: minmax(0, 1fr) minmax(16rem, 19rem);
@@ -1907,6 +1973,24 @@ body:not(.home-page) .error-layout h1 {
 
   .home-page .site-main {
     padding-top: 2.9rem;
+  }
+
+  .about-page__header {
+    margin-bottom: 2.9rem;
+  }
+
+  .about-page__header h1 {
+    font-size: 3.1rem;
+  }
+
+  .about-page__content {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page__content section,
+  .about-page__note {
+    grid-column: auto;
+    padding: 1.7rem;
   }
 
   .latest-testimony {

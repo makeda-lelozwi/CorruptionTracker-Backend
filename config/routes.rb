@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   root "home#show"
+  get "about", to: "home#about", as: :about
 
   get "testimonies", to: "public_entities#index", defaults: { label: "Testimony" }, as: :testimonies
   get "testimonies/:external_id", to: "public_entities#show", defaults: { label: "Testimony", format: false }, as: :testimony
