@@ -23,24 +23,19 @@
   <% if @latest_testimony %>
     <div class="home-dashboard">
       <section class="latest-testimony" aria-labelledby="latest-testimony-heading">
-        <h1 id="latest-testimony-heading">Latest testimony hearing</h1>
-        <dl class="latest-testimony__details">
-          <div>
-            <dt>Hearing</dt>
-            <dd><%= testimony_heading(@latest_testimony) %></dd>
-          </div>
-          <div>
-            <dt>Witness</dt>
-            <dd><%= @latest_testimony["witness"] %></dd>
-          </div>
-        </dl>
+        <p class="home-eyebrow">Latest testimony hearing</p>
+        <h1 id="latest-testimony-heading"><%= testimony_heading(@latest_testimony) %></h1>
+        <p class="latest-testimony__witness">
+          <span>Witness</span>
+          <%= @latest_testimony["witness"] %>
+        </p>
 
         <% if @latest_testimony["allegations"].any? %>
           <div class="latest-testimony__topics">
             <h2><%= @latest_testimony.fetch("title").to_s[/Day\s+\d+/i] || "This testimony" %> discusses</h2>
             <ul>
               <% @latest_testimony["allegations"].each do |allegation| %>
-                <li>allegations of “<%= allegation.fetch("name") %>”</li>
+                <li><%= allegation.fetch("name") %></li>
               <% end %>
             </ul>
           </div>
@@ -106,8 +101,8 @@
             <% if section[:entities].length > 5 %>
               <details class="home-index__more">
                 <summary>
-                  <span class="home-index__more-label">show more &gt;</span>
-                  <span class="home-index__less-label">show less &gt;</span>
+                  <span class="home-index__more-label"></span>
+                  <span class="home-index__less-label"></span>
                 </summary>
                 <ul>
                   <% section[:entities].drop(5).each do |entity| %>

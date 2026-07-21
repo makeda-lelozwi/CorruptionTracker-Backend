@@ -27,7 +27,9 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "h1", "Latest testimony hearing"
+    assert_select ".latest-testimony .home-eyebrow", "Latest testimony hearing"
+    assert_select "h1", "18 September 2025, Day 2"
+    assert_select ".latest-testimony__witness", /Witness\s*Alice/
     assert_select "a[href='/testimonies/testimony:madlanga:2025-09-18']", "read more >"
     assert_select ".testimony-timeline a[href='/testimonies/testimony:madlanga:2025-09-18']", /Day 2/
     assert_select "a[href='/people/person:alice']", "Alice"

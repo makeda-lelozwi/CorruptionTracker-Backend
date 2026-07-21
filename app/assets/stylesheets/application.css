@@ -1619,33 +1619,22 @@ body:not(.home-page) .error-layout h1 {
   text-transform: none;
 }
 
-.latest-testimony__details {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2.3rem;
+.latest-testimony__witness {
   margin: 0;
-  font-size: 1rem;
+  color: rgb(247 247 248 / 82%);
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
-.latest-testimony__details > div {
-  min-width: 0;
-}
-
-.latest-testimony__details dt {
+.latest-testimony__witness span {
   display: block;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
   color: #e6a86f;
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.latest-testimony__details dd {
-  margin: 0;
-  color: rgb(247 247 248 / 82%);
-  font-size: 1.1rem;
-  line-height: 1.35;
 }
 
 .latest-testimony__topics {
@@ -1929,7 +1918,6 @@ body:not(.home-page) .error-layout h1 {
     font-size: 2.9rem;
   }
 
-  .latest-testimony__details,
   .home-overview,
   .home-index__grid,
   .home-index__section ul {
