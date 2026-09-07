@@ -7,16 +7,23 @@
     <% featured_testimony = @latest_testimony || @testimonies.last %>
     <nav class="testimony-timeline" aria-labelledby="testimony-timeline-heading">
       <h2 id="testimony-timeline-heading">Testimony timeline</h2>
-      <ol>
-        <% @testimonies.each do |testimony| %>
-          <li>
-            <%= link_to testimony.fetch("path"), class: ("is-current" if testimony["externalId"] == featured_testimony["externalId"]), aria: ({ current: "page" } if testimony["externalId"] == featured_testimony["externalId"]) do %>
-              <strong><%= testimony_day(testimony) %></strong>
-              <span><%= testimony_short_date(testimony) %></span>
-            <% end %>
-          </li>
+      <div class="testimony-timeline__months">
+        <% @testimonies.group_by { |testimony| testimony_month(testimony) }.each do |month, testimonies| %>
+          <section class="testimony-timeline__month">
+            <h3><%= month %></h3>
+            <ol>
+              <% testimonies.each do |testimony| %>
+                <li>
+                  <%= link_to testimony.fetch("path"), class: ("is-current" if testimony["externalId"] == featured_testimony["externalId"]), aria: ({ current: "page" } if testimony["externalId"] == featured_testimony["externalId"]) do %>
+                    <strong><%= testimony_day(testimony) %></strong>
+                    <span><%= testimony_short_date(testimony) %></span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ol>
+          </section>
         <% end %>
-      </ol>
+      </div>
     </nav>
   <% end %>
 
