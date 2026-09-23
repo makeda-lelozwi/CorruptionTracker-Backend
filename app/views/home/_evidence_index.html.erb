@@ -1,0 +1,17 @@
+<section class="home-index" id="index" aria-labelledby="index-heading">
+  <div class="home-index__heading">
+    <div>
+      <p class="home-eyebrow">Explore the network</p>
+      <h2 id="index-heading">Evidence index</h2>
+    </div>
+    <% if search_query.present? %>
+      <p class="home-index__summary">Results matching “<%= search_query %>”.</p>
+    <% else %>
+      <p class="home-index__summary">Choose a record to follow its documented relationships.</p>
+    <% end %>
+  </div>
+
+  <div class="home-index__grid">
+    <%= render partial: "evidence_index_card", collection: evidence_index_sections, as: :evidence_index_section, locals: { search_query: search_query } %>
+  </div>
+</section>

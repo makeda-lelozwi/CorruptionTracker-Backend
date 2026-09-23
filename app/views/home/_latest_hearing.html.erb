@@ -1,0 +1,21 @@
+<section class="latest-testimony" aria-labelledby="latest-testimony-heading">
+  <p class="home-eyebrow">Latest testimony hearing</p>
+  <h1 id="latest-testimony-heading"><%= testimony_heading(testimony) %></h1>
+  <p class="latest-testimony__witness">
+    <span>Witness</span>
+    <%= testimony["witness"] %>
+  </p>
+
+  <% if testimony["allegations"].any? %>
+    <div class="latest-testimony__topics">
+      <h2><%= testimony.fetch("title").to_s[/Day\s+\d+/i] || "This testimony" %> discusses</h2>
+      <ul>
+        <% testimony["allegations"].each do |allegation| %>
+          <li><%= allegation.fetch("name") %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= link_to "read more >", testimony.fetch("path"), class: "latest-testimony__link" %>
+</section>
