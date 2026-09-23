@@ -1695,6 +1695,19 @@ body:not(.home-page) .error-layout h1 {
   letter-spacing: -0.02em;
 }
 
+.testimony-timeline__months {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.testimony-timeline__month h3 {
+  margin: 0 0 0.6rem;
+  color: rgb(247 247 248 / 58%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 .testimony-timeline ol {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));

@@ -9,6 +9,12 @@ module HomeHelper
     testimony["date"]
   end
 
+  def testimony_month(testimony)
+    Date.parse(testimony.fetch("date").to_s).strftime("%B %Y")
+  rescue Date::Error
+    "Date unavailable"
+  end
+
   def testimony_heading(testimony)
     day = testimony_day(testimony)
     date = Date.parse(testimony.fetch("date").to_s).strftime("%-d %B %Y")
