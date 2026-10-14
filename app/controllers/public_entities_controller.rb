@@ -36,6 +36,8 @@ class PublicEntitiesController < ApplicationController
       facts: result.facts
     ).call if @entry.label == "Person"
     @graph = PublicEntityGraph.new(entity: result.entity, facts: result.facts).call
+
+    return render "testimonies/show" if @entry.label == "Testimony"
   rescue Neo4j::Client::Error => error
     render_neo4j_error(error)
   end

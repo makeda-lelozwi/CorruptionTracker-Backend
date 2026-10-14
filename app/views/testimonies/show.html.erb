@@ -1,0 +1,11 @@
+<% content_for :title, "#{@entity[:name]} | Corruption Tracker" %>
+
+<%= render "testimonies/breadcrumbs", testimony: @entity %>
+
+<article class="testimony-page">
+  <div class="testimony-page__dossier">
+    <%= render "testimonies/header", testimony: @entity %>
+    <%= render "testimonies/relationship_map", graph: @graph if @graph[:elements][:edges].any? %>
+    <%= render "testimonies/discussed_nodes", facts: @facts_by_lane.values.flatten %>
+  </div>
+</article>

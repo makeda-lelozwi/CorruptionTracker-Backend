@@ -121,15 +121,25 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
       "Day 3 Testimony",
       "testimony-node"
     )
-    client = fake_client([ {
-      "subject" => testimony,
-      "relationship" => nil,
-      "relationshipType" => nil,
-      "source" => nil,
-      "target" => nil,
-      "sourceLabel" => nil,
-      "targetLabel" => nil
-    } ])
+    event = neo4j_node("Event", "event:example", "Example event", "event-node")
+    queries = []
+    client = Object.new
+    client.define_singleton_method(:query) do |statement, parameters:|
+      queries << [ statement, parameters ]
+
+      [ {
+        "subject" => testimony,
+        "relationship" => {
+          "elementId" => "relationship:1",
+          "properties" => { "details" => "The witness described the event as the reason for the complaint." }
+        },
+        "relationshipType" => "DISCUSSES",
+        "source" => testimony,
+        "target" => event,
+        "sourceLabel" => "Testimony",
+        "targetLabel" => "Event"
+      } ]
+    end
 
     with_neo4j_client(client) do
       get testimony_url(external_id: "testimony:madlanga:2025-09-19")
@@ -137,7 +147,12 @@ class PublicEntitiesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Day 3 Testimony"
-    assert_select "h2", "Discussed in this testimony"
+    assert_select "h2", "Discussed points"
+    assert_select ".testimony-discussed-nodes a[href='/events/event:example']", "Example event"
+    assert_select ".testimony-discussed-points__more", "Read more"
+    assert_select "[data-controller='public-graph']"
+    assert_includes queries.first.first, "(subject)-[relationship:DISCUSSES]->(connected)"
+    assert_equal "testimony:madlanga:2025-09-19", queries.first.last[:external_id]
   end
 
   test "returns a safe error page for a Neo4j failure" do

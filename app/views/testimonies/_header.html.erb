@@ -1,0 +1,22 @@
+<header class="page-header page-header--compact testimony-header">
+  <h1 class="visually-hidden"><%= testimony[:name] %></h1>
+
+  <div class="testimony-header__facts">
+    <section>
+      <p class="eyebrow">Testimony made by</p>
+      <p class="testimony-header__value"><%= testimony[:witness].presence || "Witness not recorded" %></p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Date testimony made</p>
+      <p class="testimony-header__value"><%= testimony[:date].presence&.to_s&.tr("/", "-") || "Date not recorded" %></p>
+    </section>
+  </div>
+
+  <% if testimony[:description].present? %>
+    <section class="testimony-header__summary">
+      <p class="eyebrow">Hearing summary</p>
+      <p><%= testimony[:description] %></p>
+    </section>
+  <% end %>
+</header>
