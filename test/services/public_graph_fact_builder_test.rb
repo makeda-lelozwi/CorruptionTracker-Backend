@@ -197,6 +197,7 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
       properties: {
         "quote" => "Source quotation",
         "page" => 147,
+        "details" => "The testimony identified the person as the subject of the allegation.",
         "role" => "subject",
         "reason" => "Recorded reason",
         "privateField" => "must not be public"
@@ -205,6 +206,7 @@ class PublicGraphFactBuilderTest < ActiveSupport::TestCase
 
     assert_equal "Source quotation", fact[:quote]
     assert_equal 147, fact[:page]
+    assert_equal "The testimony identified the person as the subject of the allegation.", fact[:details]
     assert_equal({ "role" => "subject", "reason" => "Recorded reason" }, fact[:metadata])
     refute_includes fact[:metadata].keys, "privateField"
     assert_equal "Allegations and complaints", fact[:lane]

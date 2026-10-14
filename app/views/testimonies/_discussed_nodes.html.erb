@@ -1,0 +1,25 @@
+<section class="facts facts--connections testimony-discussed-points" aria-labelledby="discussed-nodes-heading" data-controller="testimony-details">
+  <h2 id="discussed-nodes-heading">Discussed points</h2>
+
+  <% if facts.any? %>
+    <ul class="testimony-discussed-nodes">
+      <% facts.each do |fact| %>
+        <li>
+          <%= link_to fact[:target][:name], fact[:target][:path] %>
+          <% if fact[:details].present? %>
+            <p>
+              <span
+                data-testimony-details-content
+                data-truncated="<%= truncate(fact[:details], length: 180, omission: "…") %>"
+                data-full="<%= fact[:details] %>"
+              ><%= truncate(fact[:details], length: 180, omission: "…") %></span>
+              <button type="button" class="testimony-discussed-points__more" data-action="testimony-details#toggle" aria-expanded="false">Read more</button>
+            </p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="empty-state">No public nodes are currently listed for this testimony.</p>
+  <% end %>
+</section>

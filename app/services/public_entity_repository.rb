@@ -65,6 +65,20 @@ class PublicEntityRepository
       head([label IN $public_labels WHERE label IN labels(target)]) AS targetLabel
   CYPHER
 
+  TESTIMONY_SHOW_QUERY = <<~CYPHER.squish
+    MATCH (subject:Testimony {externalId: $external_id})
+    OPTIONAL MATCH (subject)-[relationship:DISCUSSES]->(connected)
+    WHERE connected IS NULL OR any(label IN labels(connected) WHERE label IN $public_labels)
+    RETURN
+      subject,
+      relationship,
+      type(relationship) AS relationshipType,
+      subject AS source,
+      connected AS target,
+      'Testimony' AS sourceLabel,
+      head([label IN $public_labels WHERE label IN labels(connected)]) AS targetLabel
+  CYPHER
+
   EVENT_TRAIL_QUERY = <<~CYPHER.squish
     MATCH (focus:Event {externalId: $external_id})
     OPTIONAL MATCH backward = (ancestor:Event)-[:LED_TO*1..10]->(focus)
@@ -110,7 +124,7 @@ class PublicEntityRepository
   def find(label:, external_id:)
     entry = PublicEntityCatalog.fetch(label)
     client.query(
-      format(SHOW_QUERY, label: entry.label),
+      entry.label == "Testimony" ? TESTIMONY_SHOW_QUERY : format(SHOW_QUERY, label: entry.label),
       parameters: {
         external_id: external_id,
         public_labels: PublicEntityCatalog::LABELS

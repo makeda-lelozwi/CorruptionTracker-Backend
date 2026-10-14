@@ -159,6 +159,7 @@ class PublicGraphFactBuilder
         source: source,
         target: target,
         description: humanized_description(properties["description"]),
+        details: properties["details"],
         quote: properties["quote"],
         page: properties["page"],
         metadata: properties.slice(*APPROVED_METADATA_KEYS).compact,
@@ -177,6 +178,8 @@ class PublicGraphFactBuilder
         external_id: external_id,
         name: properties["name"] || properties["title"] || external_id,
         description: properties["description"] || properties["summary"],
+        witness: properties["witness"],
+        date: properties["date"],
         path: PublicEntityCatalog.member_path(label, external_id)
       }
     end
