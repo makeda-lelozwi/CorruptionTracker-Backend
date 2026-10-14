@@ -9,8 +9,8 @@ class HomeController < ApplicationController
     rows_by_label = repository.grouped.index_by { |row| row.fetch("publicLabel") }
     filtered_rows_by_label = filter_rows(rows_by_label, @query)
 
-    @overview_sections = build_sections(rows_by_label)
-    @sections = build_sections(filtered_rows_by_label)
+    @overview_sections = build_overview_sections(rows_by_label)
+    @evidence_index_sections = build_evidence_index_sections(filtered_rows_by_label)
     @testimonies = Array(rows_by_label.dig("Testimony", "entities"))
       .sort_by { |testimony| testimony["date"].to_s }
       .map { |testimony| decorate_testimony(testimony) }
@@ -19,14 +19,18 @@ class HomeController < ApplicationController
     @latest_testimony = decorate_testimony(testimonies.max_by { |testimony| testimony["date"].to_s })
   rescue Neo4j::Client::Error => error
     Rails.logger.error("Public evidence index failed: #{error.class}")
-    @sections = []
+    @evidence_index_sections = []
     @load_error = true
     render :show, status: :bad_gateway
   end
 
 
   private
-    def build_sections(rows_by_label)
+    def build_overview_sections(rows_by_label)
+      build_evidence_index_sections(rows_by_label)
+    end
+
+    def build_evidence_index_sections(rows_by_label)
       INDEX_LABELS.map { |label| PublicEntityCatalog.fetch(label) }.map do |entry|
         entities = Array(rows_by_label.dig(entry.label, "entities"))
         {
