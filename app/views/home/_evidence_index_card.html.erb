@@ -1,0 +1,34 @@
+<section class="evidence-index-card" aria-labelledby="<%= evidence_index_section[:entry].label.parameterize %>-heading">
+  <div class="evidence-index-card__heading">
+    <h3 id="<%= evidence_index_section[:entry].label.parameterize %>-heading">
+      <%= link_to evidence_index_section[:entry].plural, PublicEntityCatalog.index_path(evidence_index_section[:entry].label) %>
+    </h3>
+    <span><%= evidence_index_section[:count] %></span>
+  </div>
+
+  <% if evidence_index_section[:entities].any? %>
+    <ul>
+      <% evidence_index_section[:entities].first(5).each do |entity| %>
+        <li><%= link_to entity.fetch("name"), entity.fetch("path") %></li>
+      <% end %>
+    </ul>
+
+    <% if evidence_index_section[:entities].length > 5 %>
+      <details class="evidence-index-card__more">
+        <summary>
+          <span class="evidence-index-card__more-label"></span>
+          <span class="evidence-index-card__less-label"></span>
+        </summary>
+        <ul>
+          <% evidence_index_section[:entities].drop(5).each do |entity| %>
+            <li><%= link_to entity.fetch("name"), entity.fetch("path") %></li>
+          <% end %>
+        </ul>
+      </details>
+    <% end %>
+  <% else %>
+    <p class="evidence-index-card__empty">No <%= evidence_index_section[:entry].plural.downcase %><%= " matched this search" if search_query.present? %>.</p>
+  <% end %>
+
+  <%= link_to "Browse all →", PublicEntityCatalog.index_path(evidence_index_section[:entry].label), class: "evidence-index-card__browse" %>
+</section>

@@ -1,0 +1,84 @@
+<% content_for :title, "#{@entry.plural} | Corruption Tracker" %>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <%= link_to "Evidence web", root_path %>
+  <span aria-hidden="true">/</span>
+  <span><%= @entry.plural %></span>
+</nav>
+
+<div class="index-dashboard index-dashboard--index-page">
+  <div class="index-dashboard__main">
+    <header class="page-header page-header--compact">
+      <p class="eyebrow"><%= @entry.singular %> index</p>
+      <h1><%= @entry.plural %></h1>
+      <p class="page-introduction">Browse the <%= @entry.plural.downcase %> available in the public graph and follow a record to see its relationships.</p>
+    </header>
+
+    <%= form_with url: PublicEntityCatalog.index_path(@entry.label), method: :get, class: "search-form", data: { turbo_frame: "entity-results" } do |form| %>
+      <%= form.label :q, "Search #{@entry.plural.downcase}" %>
+      <div class="search-form__controls">
+        <%= form.search_field :q, value: @query, placeholder: "Search a name, title or ID" %>
+        <%= form.submit "Search" %>
+      </div>
+    <% end %>
+
+    <%= turbo_frame_tag "entity-results", data: { turbo_action: "advance" } do %>
+      <div class="results-heading">
+        <h2>Available records</h2>
+        <p class="search-summary">
+          <% if @total_entities.positive? %>
+            Showing <%= ((@page - 1) * PublicEntitiesController::INDEX_PAGE_SIZE) + 1 %>–<%= [@page * PublicEntitiesController::INDEX_PAGE_SIZE, @total_entities].min %> of <%= pluralize(@total_entities, @entry.singular.downcase) %><%= " matching “#{@query}”" if @query.present? %>
+          <% else %>
+            <%= pluralize(0, @entry.singular.downcase) %><%= " matched “#{@query}”" if @query.present? %>
+          <% end %>
+        </p>
+      </div>
+
+      <% if @entities.any? %>
+        <ul class="entity-list entity-list--index">
+          <% @entities.each do |entity| %>
+            <li>
+              <%= link_to entity.fetch("name"), entity.fetch("path"), data: { turbo_frame: "_top" } %>
+              <% if entity["description"].present? %>
+                <p><%= truncate(entity["description"], length: 180) %></p>
+              <% else %>
+                <p>Open this record to explore its documented connections.</p>
+              <% end %>
+              <%= link_to "View relationships →", entity.fetch("path"), class: "entity-list__action", data: { turbo_frame: "_top" }, aria: { label: "View relationships for #{entity.fetch("name")}" } %>
+            </li>
+          <% end %>
+        </ul>
+
+        <% if @total_pages > 1 %>
+          <nav class="pagination" aria-label="Available records pages">
+            <% 1.upto(@total_pages) do |page_number| %>
+              <% if page_number == @page %>
+                <span aria-current="page"><%= page_number %></span>
+              <% else %>
+                <%= link_to page_number,
+                  public_send(@entry.index_route, q: @query.presence, page: page_number),
+                  aria: { label: "Page #{page_number}" },
+                  data: { turbo_frame: "entity-results", turbo_action: "advance" } %>
+              <% end %>
+            <% end %>
+          </nav>
+        <% end %>
+      <% else %>
+        <p class="empty-state">No <%= @entry.plural.downcase %> matched this search.</p>
+      <% end %>
+    <% end %>
+
+    <section class="dashboard-panel index-explore">
+      <p class="dashboard-panel__label">Explore the web</p>
+      <h2>Other indexes</h2>
+      <nav class="dashboard-links" aria-label="Other evidence indexes">
+        <% PublicEntityCatalog::ENTRIES.reject { |entry| entry.label == @entry.label }.each do |entry| %>
+          <%= link_to PublicEntityCatalog.index_path(entry.label) do %>
+            <span><%= entry.plural %></span>
+            <span aria-hidden="true">→</span>
+          <% end %>
+        <% end %>
+      </nav>
+    </section>
+  </div>
+</div>

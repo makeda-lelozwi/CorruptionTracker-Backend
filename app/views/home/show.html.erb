@@ -1,0 +1,37 @@
+<% content_for :title, "Corruption Tracker" %>
+
+<% if @load_error %>
+  <p class="notice notice--error home-notice">The evidence web is temporarily unavailable. Please try again later.</p>
+<% else %>
+  <%= render "timeline", testimonies: @testimonies, latest_testimony: @latest_testimony %>
+
+  <% if @latest_testimony %>
+    <div class="home-dashboard">
+      <%= render "latest_hearing", testimony: @latest_testimony %>
+
+      <aside class="home-overview" aria-labelledby="home-overview-heading">
+        <section class="dashboard-panel dashboard-panel--accent">
+          <p class="dashboard-panel__label">At a glance</p>
+          <h2 id="home-overview-heading">Public records</h2>
+          <strong class="dashboard-stat"><%= @overview_sections.sum { |section| section[:count] } %></strong>
+          <p>records across <%= pluralize(@overview_sections.count, "index") %></p>
+        </section>
+
+        <section class="dashboard-panel">
+          <p class="dashboard-panel__label">Start exploring</p>
+          <h2>Browse by type</h2>
+          <nav class="dashboard-links" aria-label="Evidence indexes">
+            <% @overview_sections.each do |section| %>
+              <%= link_to PublicEntityCatalog.index_path(section[:entry].label) do %>
+                <span><%= section[:entry].plural %></span>
+                <span><%= section[:count] %></span>
+              <% end %>
+            <% end %>
+          </nav>
+        </section>
+      </aside>
+    </div>
+  <% end %>
+
+  <%= render "evidence_index", evidence_index_sections: @evidence_index_sections, search_query: @query %>
+<% end %>

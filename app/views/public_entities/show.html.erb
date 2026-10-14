@@ -1,0 +1,109 @@
+<% content_for :title, "#{@entity[:name]} | Corruption Tracker" %>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <%= link_to "Evidence web", root_path %>
+  <span aria-hidden="true">/</span>
+  <%= link_to @entry.plural, PublicEntityCatalog.index_path(@entry.label) %>
+  <span aria-hidden="true">/</span>
+  <span><%= @entity[:name] %></span>
+</nav>
+
+<% all_facts = @facts_by_lane.values.flatten %>
+<% related_entities = all_facts
+  .flat_map { |fact| [fact[:source], fact[:target]] }
+  .reject { |entity| entity[:id] == @entity[:id] }
+  .uniq { |entity| entity[:id] }
+  .sort_by { |entity| [entity[:label].to_s, entity[:name].to_s.downcase] } %>
+
+<article class="entity-dashboard">
+  <header class="page-header page-header--compact">
+    <p class="eyebrow"><%= @entry.singular %></p>
+    <h1><%= @entity[:name] %></h1>
+    <% if @person_profile_insights.present? %>
+      <ul class="person-profile" aria-label="Roles and affiliations">
+        <% @person_profile_insights.each do |insight| %>
+          <li><%= insight %></li>
+        <% end %>
+      </ul>
+    <% end %>
+    <% if @entity[:description].present? %>
+      <p class="page-introduction"><%= @entity[:description] %></p>
+    <% end %>
+  </header>
+
+  <% if @event_trail.present? %>
+    <section class="causal-trail" aria-labelledby="causal-trail-heading">
+      <div class="causal-trail__heading">
+        <p class="dashboard-panel__label">Events and causality</p>
+        <h2 id="causal-trail-heading">Causal trail</h2>
+        <p>Follow the recorded chain back to its earliest linked event and up to two steps forward.</p>
+      </div>
+
+      <ol class="causal-trail__stages">
+        <% @event_trail.each do |stage| %>
+          <li class="causal-trail__stage<%= " causal-trail__stage--current" if stage.current %>">
+            <span class="causal-trail__label"><%= stage.label %></span>
+            <ul>
+              <% stage.events.each do |event| %>
+                <li><%= link_to event[:name], event[:path], aria: { current: stage.current ? "step" : nil } %></li>
+              <% end %>
+            </ul>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+  <% end %>
+
+  <% if @graph[:elements][:edges].any? %>
+    <section
+      class="supporting-graph"
+      aria-labelledby="relationship-map"
+      data-controller="public-graph"
+    >
+      <div class="supporting-graph__heading">
+        <div>
+          <p class="dashboard-panel__label">Visual explorer</p>
+          <h2 id="relationship-map">Relationship map</h2>
+          <p>Select a node to open its public evidence page.</p>
+        </div>
+      </div>
+
+      <% if @graph[:omitted_node_count].positive? %>
+        <p class="notice">Showing a smaller neighbourhood. <%= pluralize(@graph[:omitted_node_count], "related node") %> omitted.</p>
+      <% end %>
+
+      <script type="application/json" data-public-graph-target="data"><%= raw json_escape(@graph[:elements].to_json) %></script>
+      <div class="graph-container" data-public-graph-target="canvas"></div>
+      <p class="graph-error" data-public-graph-target="error" hidden></p>
+      <noscript><p class="notice">The relationship map needs JavaScript. All relationships remain available above.</p></noscript>
+    </section>
+  <% end %>
+
+  <section class="facts facts--connections" aria-labelledby="discussed-connections">
+    <h2 id="discussed-connections"><%= @entry.label == "Testimony" ? "Discussed in this testimony" : "Related to" %></h2>
+
+    <% if related_entities.any? %>
+      <ul class="connected-records connected-records--primary">
+        <% related_entities.each do |entity| %>
+          <% relationship_facts = all_facts.select do |fact|
+            [fact[:source][:id], fact[:target][:id]].include?(entity[:id])
+          end %>
+          <li>
+            <span><%= entity[:label] %></span>
+            <%= link_to entity[:name], entity[:path] %>
+            <div class="connected-records__insights">
+              <% relationship_facts.each do |fact| %>
+                <p class="connected-records__relationship">
+                  <%= fact[:sentence] %><%= " #{fact[:description]}" if fact[:description].present? %>
+                </p>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-state">No public relationships are currently listed for this <%= @entry.singular.downcase %>.</p>
+    <% end %>
+  </section>
+
+</article>
