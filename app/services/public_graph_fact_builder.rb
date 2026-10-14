@@ -59,7 +59,7 @@ class PublicGraphFactBuilder
   # type can mean something different between different kinds of nodes.
   TEMPLATES = {
     [ "Testimony", "DISCUSSES", "Allegation" ] => Template.new(lane: "Testimony and sources", sentence: "%{source} discusses the allegation %{target}.", direction: :forward),
-    [ "Event", "LED_TO", "Allegation" ] => Template.new(lane: "Events and causality", sentence: "%{source} is reported to have led to the allegation %{target}.", direction: :forward),
+    [ "Event", "LED_TO", "Allegation" ] => Template.new(lane: "Events and causality", sentence: "The dataset records %{source} as leading to the allegation “%{target}”.", direction: :forward),
     [ "Person", "WORKS_FOR", "Organisation" ] => Template.new(lane: "Roles and affiliations", sentence: "%{source} is recorded as working for %{target}.", direction: :forward),
     [ "Event", "INVOLVES", "Person" ] => Template.new(lane: "Events and causality", sentence: "%{target} is reported to be involved in %{source}.", direction: :reverse),
     [ "Person", "ASSOCIATE_OF", "Person" ] => Template.new(lane: "Roles and affiliations", sentence: "%{source} is reported to be an associate of %{target}.", direction: :forward),

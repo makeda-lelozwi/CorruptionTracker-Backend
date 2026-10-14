@@ -35,7 +35,7 @@
     <section class="causal-trail" aria-labelledby="causal-trail-heading">
       <div class="causal-trail__heading">
         <p class="dashboard-panel__label">Events and causality</p>
-        
+        <h2 id="causal-trail-heading">Causal trail</h2>
         <p>Follow the recorded chain back to its earliest linked event and up to two steps forward.</p>
       </div>
 
@@ -80,6 +80,7 @@
   <% end %>
 
   <section class="facts facts--connections" aria-labelledby="discussed-connections">
+    <h2 id="discussed-connections"><%= @entry.label == "Testimony" ? "Discussed in this testimony" : "Related to" %></h2>
 
     <% if related_entities.any? %>
       <ul class="connected-records connected-records--primary">
