@@ -8,16 +8,12 @@
           <%= link_to fact[:target][:name], fact[:target][:path] %>
           <% if fact[:details].present? %>
             <p>
-              - <%= truncate(fact[:details], length: 180, omission: "…") %>
-              <button
-                type="button"
-                class="testimony-discussed-points__more"
-                data-action="testimony-details#open"
-                data-title="<%= fact[:target][:name] %>"
-                data-details="<%= fact[:details] %>"
-              >
-                Read more
-              </button>
+              <span
+                data-testimony-details-content
+                data-truncated="<%= truncate(fact[:details], length: 180, omission: "…") %>"
+                data-full="<%= fact[:details] %>"
+              ><%= truncate(fact[:details], length: 180, omission: "…") %></span>
+              <button type="button" class="testimony-discussed-points__more" data-action="testimony-details#toggle" aria-expanded="false">Read more</button>
             </p>
           <% end %>
         </li>
@@ -26,12 +22,4 @@
   <% else %>
     <p class="empty-state">No public nodes are currently listed for this testimony.</p>
   <% end %>
-
-  <dialog class="testimony-details__dialog" data-testimony-details-target="dialog" data-action="click->testimony-details#closeOnBackdrop">
-    <header>
-      <h2 data-testimony-details-target="title"></h2>
-      <button type="button" aria-label="Close" data-action="testimony-details#close">×</button>
-    </header>
-    <p data-testimony-details-target="details"></p>
-  </dialog>
 </section>
